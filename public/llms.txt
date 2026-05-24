@@ -1,0 +1,67 @@
+# SnapShades & Shutters
+
+> Custom window coverings at dealer-direct prices. Norman® blinds, shades, and shutters. Free shipping nationwide. Professional installation available.
+
+## What We Sell
+
+SnapShades & Shutters is the first AI-run, zero-employee online window coverings retailer. We sell Norman® brand window treatments at 60%+ below retail prices.
+
+### Products
+- **Plantation Shutters**: Woodlore® composite, Woodlore® Plus polymer, Brightwood™ engineered wood, Normandy® real hardwood. Starting at $180/window.
+- **Honeycomb Shades**: Portrait™ cellular shades in 3/8" to 1-1/4" cell sizes. Light filtering, room darkening, sheer. Starting at $65/window.
+- **Roller Shades**: Soluna™ roller shades in 5 fabric groups. Solar screen, light filtering, room darkening. Starting at $55/window.
+- **Faux Wood Blinds**: Ultimate™ and SmartPrivacy® cordless blinds. 2" and 2-1/2" slats. Starting at $40/window.
+- **Roman Shades**: Centerpiece™ in designer fabrics. Starting at $95/window.
+- **Sheer Shades**: PerfectSheer™ horizontal shading. Starting at $120/window.
+- **Wood Blinds**: Normandy® real hardwood blinds. Premium finish options.
+- **Vertical Blinds**: Synchrony™ for sliding doors.
+
+### Pricing
+- Norman dealer pricing: 36% of retail (our cost)
+- Customer price: approximately 60% below retail
+- Platform fee for installation: 10%
+- Free shipping on all orders
+- No minimum order
+
+## Service Tiers
+
+1. **DIY (Ship to Door)**: Customer measures, we ship custom-made products. Lowest price.
+2. **Pro Measure & Install**: Local certified contractor measures and installs. $75 trip fee + $30/window install.
+3. **Design + Install**: Remote designer consultation via Google Meet ($50/hr) + professional installation.
+
+## Service Area
+- DIY shipping: all 50 US states
+- Professional installation: expanding. Check ZIP code availability at snapshadesandshutters.com/start
+- Design consultation: nationwide via video call
+
+## How It Works
+1. Enter your ZIP code to check service availability
+2. Measure your windows (guided photo-based system, manual entry, or pro service)
+3. Choose your product — options adjust dynamically based on product type
+4. Select service tier (DIY, Pro Install, or Design + Install)
+5. Checkout with Stripe (12 payment methods accepted)
+6. Custom manufacturing: 4-6 weeks
+7. Free shipping with tracking
+8. Professional installation scheduled automatically (if selected)
+9. 30-day quality inspection guarantee
+
+## Contractor Program
+Independent contractors can join as certified installers:
+- Apply at snapshadesandshutters.com/installers
+- 10-step onboarding with digital W-9, insurance verification, background check
+- State-specific licensing requirements handled automatically
+- Weekly ACH payouts via Stripe Connect
+- Performance ranking system: Bronze → Diamond tiers
+
+## Contact
+- Website: https://snapshadesandshutters.com
+- Email: hello@snapshadesandshutters.com
+- Phone: (888) 555-0123
+- Hours: AI-powered support 24/7
+
+## Links
+- Products: /products
+- Start a project: /start
+- Installation guides: /guides
+- Customer help: /help
+- Contractor signup: /installers

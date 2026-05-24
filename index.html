@@ -1,35 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SnapShades - Custom blinds, shades & shutters delivered to your door. Snap photos, get instant pricing, order online. Professional installation available." />
-    <title>SnapShades — Snap. Order. Done.</title>
-    
-    <!-- JSON-LD for LLM/AI discovery -->
+    <title>SnapShades & Shutters — Custom Blinds, Shades & Shutters at 60% Below Retail</title>
+    <meta name="description" content="Custom Norman® blinds, shades, and shutters at dealer-direct prices. 60% below retail. Free shipping. Professional installation available. Photo-based measurements. Starting at $29.99/window.">
+    <meta name="author" content="SnapShades and Shutters LLC" />
+    <meta name="keywords" content="custom blinds online, window shades, plantation shutters, Norman blinds, cheap blinds, dealer direct blinds, photo measurement blinds, order blinds online, honeycomb shades, roller shades, faux wood blinds" />
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://ghqfpqthwgwogktlkfjp.supabase.co" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://js.stripe.com" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://snapshadesandshutters.com" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://snapshadesandshutters.com" />
+    <meta property="og:title" content="SnapShades & Shutters — Custom Window Coverings at 60% Below Retail" />
+    <meta property="og:description" content="Custom Norman® blinds, shades, and shutters at dealer-direct prices. Free shipping. Professional installation. Starting at $29.99/window." />
+    <meta property="og:image" content="https://snapshadesandshutters.com/tape-measure-window.jpg" />
+    <meta property="og:site_name" content="SnapShades & Shutters" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SnapShades & Shutters — Custom Window Coverings at 60% Below Retail" />
+    <meta name="twitter:description" content="Custom Norman® blinds, shades, and shutters at dealer-direct prices. Free shipping. Professional installation." />
+    <meta name="twitter:image" content="https://snapshadesandshutters.com/tape-measure-window.jpg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <!-- AI/LLM Discovery -->
+    <link rel="author" href="/humans.txt" />
+
+    <!-- Schema.org: Store + Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Store",
-      "name": "SnapShades",
-      "alternateName": "Snap Shades and Shutters",
-      "description": "Online retailer of custom blinds, shades, and shutters. Photo-based measurements, instant pricing, three service tiers: DIY, Professional Installation, and Design Consultation.",
+      "name": "SnapShades & Shutters",
+      "alternateName": "SnapShades",
+      "description": "Custom Norman® blinds, shades, and shutters at dealer-direct prices. 60% below retail. Free shipping nationwide. Professional installation. Three service tiers: DIY ship-to-door, Professional Measure & Install, and Design Consultation + Installation.",
       "url": "https://snapshadesandshutters.com",
-      "priceRange": "$-$$$",
-      "areaServed": "US",
+      "telephone": "+1-888-555-0123",
+      "email": "hello@snapshadesandshutters.com",
+      "priceRange": "$$",
+      "currenciesAccepted": "USD",
+      "paymentAccepted": "Credit Card, Debit Card, Apple Pay, Google Pay, PayPal, Venmo, Cash App, Zelle, ACH, Affirm, Klarna, Cryptocurrency",
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      },
+      "brand": {
+        "@type": "Brand",
+        "name": "Norman®"
+      },
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
-        "name": "Window Coverings",
+        "name": "Custom Window Coverings",
         "itemListElement": [
-          {"@type": "OfferCatalog", "name": "Blinds"},
-          {"@type": "OfferCatalog", "name": "Shades"},
-          {"@type": "OfferCatalog", "name": "Shutters"}
+          {"@type": "OfferCatalog", "name": "Plantation Shutters", "description": "Woodlore, Brightwood, Normandy lines. Inside or outside mount."},
+          {"@type": "OfferCatalog", "name": "Honeycomb Shades", "description": "Portrait™ cellular shades. Light filtering, room darkening, sheer."},
+          {"@type": "OfferCatalog", "name": "Roller Shades", "description": "Soluna™ roller shades in 5 fabric groups."},
+          {"@type": "OfferCatalog", "name": "Faux Wood Blinds", "description": "Ultimate™ and SmartPrivacy® cordless faux wood."},
+          {"@type": "OfferCatalog", "name": "Roman Shades", "description": "Centerpiece™ designer roman shades."},
+          {"@type": "OfferCatalog", "name": "Sheer Shades", "description": "PerfectSheer™ and SmartDrape® sheer shading."},
+          {"@type": "OfferCatalog", "name": "Wood Blinds", "description": "Normandy® real hardwood blinds."}
         ]
-      }
+      },
+      "potentialAction": {
+        "@type": "OrderAction",
+        "target": "https://snapshadesandshutters.com/start"
+      },
+      "sameAs": []
     }
     </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

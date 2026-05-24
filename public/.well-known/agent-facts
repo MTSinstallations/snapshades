@@ -1,0 +1,37 @@
+{
+  "@context": "https://nanda.dev/ns/agent-facts/v1",
+  "id": "nanda:snapshadesandshutters.com",
+  "agent_name": "urn:agent:snapshades:com",
+  "display_name": "SnapShades & Shutters",
+  "description": "Custom window coverings retailer. Norman® blinds, shades, and shutters at dealer-direct prices. Free shipping nationwide. Professional installation in activated service areas.",
+  "endpoints": {
+    "static": ["https://snapshadesandshutters.com"]
+  },
+  "capabilities": {
+    "modalities": ["text"],
+    "services": [
+      "window-covering-retail",
+      "professional-installation",
+      "design-consultation",
+      "measurement-guidance"
+    ],
+    "products": [
+      "plantation-shutters",
+      "honeycomb-shades",
+      "roller-shades",
+      "roman-shades",
+      "faux-wood-blinds",
+      "wood-blinds",
+      "sheer-shades"
+    ]
+  },
+  "trust": {
+    "certification": "self-attested",
+    "human_oversight": "true"
+  },
+  "contact": {
+    "email": "hello@snapshadesandshutters.com",
+    "phone": "+1-888-555-0123",
+    "website": "https://snapshadesandshutters.com"
+  }
+}

@@ -1,17 +1,11 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './index.css'
-import Landing from './pages/Landing'
-import MeasurePage from './pages/MeasurePage'
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import "@fontsource-variable/inter";
+import "./index.css";
+import { initDeviceSync } from "./lib/device-sync";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/measure/:sessionId" element={<MeasurePage />} />
-      </Routes>
-    </BrowserRouter>
-  </React.StrictMode>,
-)
+// Cross-device project sync: auto-pull on login, debounced auto-push on
+// localStorage changes. No-op for logged-out users.
+initDeviceSync();
+
+createRoot(document.getElementById("root")!).render(<App />);

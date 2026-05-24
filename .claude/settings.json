@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "cd /Users/michaelshepard/SnapShades && npx tsc --noEmit -p tsconfig.app.json 2>&1 | tail -20"
+      }
+    ]
+  }
+}

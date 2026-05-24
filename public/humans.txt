@@ -1,0 +1,12 @@
+/* TEAM */
+Company: SnapShades & Shutters
+Site: snapshadesandshutters.com
+Location: United States
+
+/* TECHNOLOGY */
+Platform: React + Vite + TypeScript + Tailwind CSS
+Backend: Supabase (PostgreSQL + Edge Functions + Auth)
+Payments: Stripe (Checkout + Connect)
+Hosting: Vercel
+DNS/CDN: Cloudflare
+Products: Norman® Window Coverings

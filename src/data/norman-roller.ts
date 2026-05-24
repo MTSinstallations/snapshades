@@ -1,0 +1,252 @@
+/**
+ * Norman® Soluna™ Roller Shades
+ * Source: 2026 March Retail Price Guide
+ */
+import type { Product, Surcharge } from './norman-catalog';
+
+const ROLLER_WIDTHS = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 108, 120];
+const ROLLER_SOLAR_HEIGHTS = [36, 48, 60, 72, 84, 96, 108, 120, 132, 144];
+const ROLLER_FABRIC_HEIGHTS = [36, 48, 60, 72, 84, 96, 108, 120, 132, 144];
+
+export const ROLLER_LIFT_SURCHARGES: Surcharge[] = [
+  { name: 'SmartRelease™', price: 89, type: 'flat' },
+  { name: 'Continuous Chain (Stainless Steel)', price: 0, type: 'flat', description: 'Included at no charge' },
+];
+
+export const ROLLER_MISC_SURCHARGES: Surcharge[] = [
+  { name: 'LightGuard 360™', price: 0, type: 'flat', description: 'Side light blocking channels' },
+  { name: 'Fascia', price: 0, type: 'flat', description: 'Decorative front cover' },
+  { name: 'Raceway Installation System', price: 0, type: 'flat', description: 'Easy install — included' },
+  { name: '30" Fiberglass Operating Pole', price: 0, type: 'flat', description: 'For cordless — included' },
+  { name: 'Shim', price: 7, type: 'flat' },
+  { name: 'Magnetic Hold Down', price: 28, type: 'flat', description: 'Per shade' },
+];
+
+export const solunaRoller: Product = {
+  id: 'soluna-roller',
+  slug: 'soluna-roller-shades',
+  name: 'Soluna™ Roller Shades',
+  brand: 'Norman®',
+  category: 'shades',
+  subcategory: 'roller',
+  tagline: 'A rainbow of fabric choices with exclusive PrecisionLift™ cordless technology',
+  description: 'A rainbow of fabric choices, exclusive PrecisionLift cordless technology, motorization and more. Soluna has a special solution that will bring your home comfort, grace and style — morning, day or night. Available in solar screen and fabric collections with multiple opacity levels.',
+  features: [
+    'PrecisionLift™ cordless — one-touch lift technology',
+    'SmartRelease™ lift option',
+    'Stainless steel operating chain (no extra charge)',
+    'LightGuard 360™ side channels available',
+    'Raceway installation system for easy install',
+    'Motorization available (Automate Home)',
+    'Solar screen and fabric collections',
+    'Multiple opacities: sheer, light filtering, room darkening',
+    'Fascia and valance options',
+    'Dual shade option available',
+  ],
+  benefits: [
+    'UV protection — solar screens block harmful rays while preserving views',
+    'Energy efficient — reduce solar heat gain',
+    'Child safe — cordless, Best for Kids certified',
+    'Sleek modern profile — minimalist design',
+    'Easy maintenance — dust with soft cloth',
+    'Versatile — works with any decor style',
+  ],
+  liftSystems: ['Cordless (PrecisionLift™)', 'SmartRelease™', 'Continuous Chain', 'Motorized'],
+  motorization: {
+    available: true,
+    options: ['Automate Home Motorization — rechargeable battery or low voltage DC'],
+    surcharges: [
+      { name: 'Motor (Rechargeable Battery)', price: 682, type: 'flat' },
+      { name: 'Low Voltage DC Motor', price: 814, type: 'flat' },
+      { name: 'DC Connection Harness', price: 19, type: 'flat' },
+      { name: 'Power Distribution Panel', price: 1133, type: 'flat' },
+      { name: 'External Battery Pack', price: 230, type: 'flat' },
+      { name: 'Repeater', price: 272, type: 'flat' },
+      { name: '15-Channel Remote', price: 140, type: 'flat' },
+      { name: '5-Channel Wall Switch', price: 163, type: 'flat' },
+      { name: 'Hub', price: 483, type: 'flat' },
+      { name: 'Charging Kit', price: 103, type: 'flat' },
+      { name: 'Solar Panel', price: 242, type: 'flat' },
+    ],
+  },
+  surcharges: [...ROLLER_LIFT_SURCHARGES, ...ROLLER_MISC_SURCHARGES],
+  variants: [
+    // SOLAR SCREEN - Group 1
+    {
+      id: 'soluna-solar-g1',
+      name: 'Solar Screen — Group 1',
+      cellSize: 'N/A',
+      construction: 'Solar Screen',
+      liftSystem: 'Cordless',
+      maxWidth: 120,
+      fabricGroups: [{ groupNumber: 1, name: 'Solar Group 1', fabrics: ['Serene (7%)', 'Flow (7%)', 'Windsong (5%)', 'NA400 (3%)', 'NA400 (5%)', 'NA400 (10%)', 'NA300 (3%)', 'NA300 (5%)'] }],
+      restrictions: [],
+      priceGrid: {
+        widths: ROLLER_WIDTHS,
+        heights: ROLLER_SOLAR_HEIGHTS,
+        prices: [
+          [240,258,278,296,314,331,362,382,406,450,474,507,533,577,628],
+          [259,282,302,325,350,372,412,439,468,519,545,587,614,671,723],
+          [281,302,326,357,390,421,467,497,535,586,618,666,692,745,795],
+          [297,325,359,397,430,468,522,558,595,650,677,721,749,809,870],
+          [318,354,394,434,474,513,573,614,645,697,745,776,809,874,941],
+          [336,383,428,471,518,563,618,656,690,745,797,831,870,941,1015],
+          [361,411,461,511,558,600,659,697,737,795,850,890,932,1007,1088],
+          [387,440,495,546,597,635,697,739,780,844,903,949,990,1078,1160],
+          [408,470,526,582,627,670,737,780,826,894,956,1002,1049,1141,1235],
+          [434,498,561,609,659,703,777,823,872,940,1010,1061,1111,1206,1309],
+        ],
+      },
+    },
+    // SOLAR SCREEN - Group 2
+    {
+      id: 'soluna-solar-g2',
+      name: 'Solar Screen — Group 2',
+      cellSize: 'N/A',
+      construction: 'Solar Screen',
+      liftSystem: 'Cordless',
+      maxWidth: 120,
+      fabricGroups: [{ groupNumber: 2, name: 'Solar Group 2', fabrics: ['Serene (1%)', 'Serene (3%)', 'Flow (1%)', 'Flow (5%)', 'Windsong (1%)', 'Moon (5%)', 'Breeze (1% & 3%)', 'NA300 (1%)', 'NA400 (1%)', 'NA820 (3%)'] }],
+      restrictions: [],
+      priceGrid: {
+        widths: ROLLER_WIDTHS,
+        heights: ROLLER_SOLAR_HEIGHTS,
+        prices: [
+          [261,283,306,325,346,367,406,428,454,503,530,571,600,652,711],
+          [284,309,334,357,384,416,462,495,526,581,617,660,692,761,818],
+          [307,334,361,396,434,468,525,561,600,658,699,748,779,842,898],
+          [328,359,398,439,477,522,587,627,671,733,766,817,846,918,986],
+          [351,390,437,483,527,574,645,693,728,791,842,877,918,992,1069],
+          [372,422,474,526,575,628,699,740,778,843,902,945,986,1069,1153],
+          [399,456,510,571,624,672,745,791,831,902,966,1010,1055,1145,1235],
+          [428,490,551,611,667,711,791,837,887,957,1023,1073,1123,1220,1317],
+          [454,523,591,650,701,749,835,887,936,1014,1086,1139,1190,1297,1400],
+          [483,554,626,684,737,789,877,935,990,1067,1146,1204,1258,1373,1488],
+        ],
+      },
+    },
+    // SOLAR SCREEN - Group 3
+    {
+      id: 'soluna-solar-g3',
+      name: 'Solar Screen — Group 3',
+      cellSize: 'N/A',
+      construction: 'Solar Screen',
+      liftSystem: 'Cordless',
+      maxWidth: 120,
+      fabricGroups: [{ groupNumber: 3, name: 'Solar Group 3', fabrics: ['Lakeview (3%)', 'Lakeview (7%)', 'Lakeview (10%)', 'Meadows (1%)', 'Meadows (3%)', 'Jubilee (3%)', 'Galaxy (3%)'] }],
+      restrictions: [],
+      priceGrid: {
+        widths: ROLLER_WIDTHS,
+        heights: ROLLER_SOLAR_HEIGHTS,
+        prices: [
+          [290,322,346,374,404,430,460,488,522,575,608,655,690,754,822],
+          [322,354,385,419,454,495,533,573,611,673,713,768,805,891,963],
+          [349,385,423,469,515,561,605,651,701,770,815,879,918,1000,1079],
+          [376,420,470,525,577,633,683,738,791,863,905,969,1013,1105,1194],
+          [406,462,519,579,641,699,762,818,868,940,1006,1057,1106,1206,1312],
+          [436,501,570,636,701,770,829,885,938,1017,1090,1146,1200,1313,1426],
+          [469,544,620,693,766,829,890,945,1010,1091,1173,1236,1294,1417,1541],
+          [503,587,668,745,821,885,950,1015,1080,1169,1256,1325,1389,1523,1657],
+          [541,627,714,799,869,940,1010,1080,1152,1246,1341,1413,1482,1628,1772],
+          [574,669,764,844,920,992,1070,1146,1222,1320,1422,1499,1576,1732,1888],
+        ],
+      },
+    },
+    // FABRIC - Group 1
+    {
+      id: 'soluna-fabric-g1',
+      name: 'Fabric — Group 1',
+      cellSize: 'N/A',
+      construction: 'Fabric Roller',
+      liftSystem: 'Cordless',
+      maxWidth: 120,
+      fabricGroups: [{ groupNumber: 1, name: 'Fabric Group 1', fabrics: ['Callie RD', 'Elements (Room Darkening)', 'Brook', 'Chelsea', 'Verona LF', 'Callie (Designer)', 'Scarlett (Sheer)', 'Catalina (Natural)'] }],
+      restrictions: [],
+      priceGrid: {
+        widths: ROLLER_WIDTHS,
+        heights: ROLLER_FABRIC_HEIGHTS,
+        prices: [
+          [254,273,291,312,333,351,371,401,429,474,500,526,551,601,652],
+          [274,298,318,345,368,397,422,464,495,547,576,608,639,697,750],
+          [296,318,346,377,414,448,482,526,566,620,655,690,717,774,826],
+          [313,345,382,420,457,497,538,591,628,689,717,749,779,841,903],
+          [336,375,418,462,503,546,592,648,683,737,774,806,841,909,982],
+          [357,406,453,501,549,598,639,696,730,791,828,866,903,982,1055],
+          [383,437,488,544,594,640,677,737,779,842,885,923,968,1048,1130],
+          [409,469,526,582,636,676,719,782,828,895,941,987,1030,1121,1207],
+          [435,500,560,623,670,714,762,828,873,945,995,1042,1092,1188,1286],
+          [462,530,596,649,701,750,802,871,923,997,1050,1103,1155,1255,1362],
+        ],
+      },
+    },
+    // FABRIC - Group 2
+    {
+      id: 'soluna-fabric-g2',
+      name: 'Fabric — Group 2',
+      cellSize: 'N/A',
+      construction: 'Fabric Roller',
+      liftSystem: 'Cordless',
+      maxWidth: 120,
+      fabricGroups: [{ groupNumber: 2, name: 'Fabric Group 2', fabrics: ['Samoa', 'Phuket', 'Bora Bora', 'Sumatra', 'Java', 'Bali', 'Riviera', 'Lake Tahoe (Natural)', 'Francis', 'Hayes', 'Valerie', 'Emery', 'Sierra', 'Shimmer', 'Amelia', 'Lola LF', 'Remy (Designer)', 'Jamaica', 'Bermuda', 'Fiji', 'Francis RD', 'Amelia RD (Room Darkening)', 'Sheer', 'Dazzle', 'Lakeshore (Sheer)'] }],
+      restrictions: [],
+      priceGrid: {
+        widths: ROLLER_WIDTHS,
+        heights: ROLLER_FABRIC_HEIGHTS,
+        prices: [
+          [278,299,323,341,367,389,412,446,476,529,558,587,617,672,731],
+          [301,328,353,377,406,440,471,518,549,609,647,679,713,780,843],
+          [325,353,384,420,462,497,537,587,628,692,733,772,803,868,927],
+          [349,383,422,467,509,555,600,659,703,770,803,842,873,944,1017],
+          [370,415,465,513,562,611,661,727,765,829,868,907,944,1023,1103],
+          [396,449,503,561,613,670,714,777,820,887,932,973,1017,1103,1189],
+          [423,486,543,605,667,717,763,829,873,945,994,1042,1091,1181,1276],
+          [454,520,591,650,708,759,809,878,932,1005,1055,1107,1157,1261,1359],
+          [485,558,627,697,748,801,854,932,985,1066,1122,1173,1230,1341,1449],
+          [513,593,668,730,785,842,898,983,1042,1123,1183,1243,1299,1417,1537],
+        ],
+      },
+    },
+    // FABRIC - Group 3
+    {
+      id: 'soluna-fabric-g3',
+      name: 'Fabric — Group 3',
+      cellSize: 'N/A',
+      construction: 'Fabric Roller',
+      liftSystem: 'Cordless',
+      maxWidth: 120,
+      fabricGroups: [{ groupNumber: 3, name: 'Fabric Group 3', fabrics: ['Caroline', 'Aruba', 'Maui', 'Cove (Natural)', 'Breeze', 'Clarissa', 'Kendra (Designer)', 'Lola BO', 'Garden', 'Breeze RD', 'Remy RD', 'Summerland', 'Cory (Room Darkening)'] }],
+      restrictions: [],
+      priceGrid: {
+        widths: ROLLER_WIDTHS,
+        heights: ROLLER_FABRIC_HEIGHTS,
+        prices: [
+          [307,337,365,396,424,454,485,517,552,609,645,680,719,786,856],
+          [337,372,407,443,482,522,563,605,648,715,755,800,841,927,1002],
+          [366,407,449,497,545,594,643,693,745,817,868,918,957,1044,1126],
+          [398,444,498,554,613,671,725,782,839,917,964,1011,1054,1153,1247],
+          [428,487,549,617,677,740,809,869,920,999,1049,1103,1154,1261,1366],
+          [462,530,602,674,745,817,879,940,995,1081,1137,1195,1254,1367,1489],
+          [497,575,656,734,813,879,944,1005,1071,1160,1226,1289,1352,1480,1608],
+          [534,622,707,792,871,940,1011,1079,1148,1242,1314,1382,1451,1592,1731],
+          [572,667,759,846,921,999,1071,1148,1225,1325,1398,1473,1549,1704,1852],
+          [607,708,811,897,976,1054,1138,1219,1301,1407,1485,1569,1647,1812,1974],
+        ],
+      },
+    },
+  ],
+  imageUrls: {
+    hero: 'https://normanusa.com/wp-content/uploads/soluna-roller-hero.jpg',
+    gallery: ['https://normanusa.com/product/soluna-roller-shades/'],
+    swatches: [],
+  },
+  specs: {
+    'Collections': 'Solar Screen, Fabric (Natural, Designer, Room Darkening, Sheer)',
+    'Max Width': '120"',
+    'Lift Systems': 'Cordless (PrecisionLift™), SmartRelease™, Chain, Motorized',
+    'Motorization': 'Automate Home — battery or hardwired',
+    'Child Safety': 'Best for Kids Certified (Cordless)',
+    'Included': 'Stainless steel chain, Raceway install system, 30" operating pole',
+  },
+  restrictions: [],
+  awards: [],
+};
