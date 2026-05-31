@@ -238,7 +238,7 @@ export default function FabricSelector({ productSlug, value, onChange, label = '
 
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                onChange={(e) => setSortBy(e.target.value as 'popular' | 'light-dark' | 'collection')}
                 className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 focus:border-blue-400 outline-none"
               >
                 <option value="popular">Popular</option>

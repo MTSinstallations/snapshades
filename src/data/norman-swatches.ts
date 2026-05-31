@@ -266,8 +266,10 @@ export const ALL_SWATCHES: Swatch[] = [
   ...LEVOLOR_ALL_SWATCHES,
 ];
 
-// Map product ID to swatches
-export const SWATCHES_BY_PRODUCT: Record<string, Swatch[]> = {
+// Map product ID to swatches. Keyed by both the legacy short keys and the
+// actual catalog product slugs so the fabric browser resolves regardless of
+// which identifier a caller passes.
+const SWATCHES_BY_KEY: Record<string, Swatch[]> = {
   // Norman
   'portrait-honeycomb': HONEYCOMB_SWATCHES,
   'soluna-roller': ROLLER_SWATCHES,
@@ -282,4 +284,30 @@ export const SWATCHES_BY_PRODUCT: Record<string, Swatch[]> = {
   'norman-shutters': [],
   // Levolor
   ...LEVOLOR_SWATCHES_BY_PRODUCT,
+};
+
+// Catalog product slug → swatch source key (slugs carry product-type suffixes
+// or marketing names that the swatch keys above omit).
+const PRODUCT_SLUG_TO_SWATCH_KEY: Record<string, string> = {
+  'portrait-honeycomb-shades': 'portrait-honeycomb',
+  'soluna-roller-shades': 'soluna-roller',
+  'perfectsheer-shades': 'perfectsheer',
+  'smartdrape-shades': 'smartdrape',
+  'centerpiece-roman-shades': 'centerpiece-roman',
+  'ultimate-faux-wood-blinds': 'ultimate-faux-wood',
+  'smartprivacy-faux-wood-blinds': 'smartprivacy-faux-wood',
+  'normandy-wood-blinds': 'normandy-wood',
+  'synchrony-vertical-blinds': 'synchrony-vertical',
+  'citylights-aluminum-blinds': 'citylights-aluminum',
+  'plantation-shutters': 'norman-shutters',
+  'levolor-classic-faux-wood': 'levolor-faux-wood',
+  'levolor-real-wood': 'levolor-wood',
+  'levolor-riviera-metal': 'levolor-metal-blinds',
+};
+
+export const SWATCHES_BY_PRODUCT: Record<string, Swatch[]> = {
+  ...SWATCHES_BY_KEY,
+  ...Object.fromEntries(
+    Object.entries(PRODUCT_SLUG_TO_SWATCH_KEY).map(([slug, key]) => [slug, SWATCHES_BY_KEY[key] ?? []])
+  ),
 };

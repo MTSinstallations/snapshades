@@ -1,5 +1,22 @@
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import type { CartWindow } from '@/hooks/useCart';
+
+// ── Demo-mode order store (localStorage) ──
+// When no Supabase backend is configured the storefront still completes real
+// orders so the full purchase flow works end-to-end. Orders are persisted
+// locally and read back by the confirmation / account pages.
+const DEMO_ORDERS_KEY = 'snapshades_orders';
+
+function loadDemoOrders(): Record<string, Record<string, unknown>> {
+  try { return JSON.parse(localStorage.getItem(DEMO_ORDERS_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveDemoOrder(order: Record<string, unknown>) {
+  const all = loadDemoOrders();
+  all[order.id as string] = order;
+  localStorage.setItem(DEMO_ORDERS_KEY, JSON.stringify(all));
+}
 
 interface CheckoutInfo {
   email: string;
@@ -35,6 +52,45 @@ export async function createOrder(
   },
 ): Promise<OrderResult> {
   try {
+  // Demo mode: persist the order locally and return success so the customer
+  // reaches a real confirmation page without a backend.
+  if (!isSupabaseConfigured) {
+    const orderNumber = `SS-${Date.now().toString().slice(-6)}`;
+    const orderId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `demo-${Date.now()}`;
+    const order = {
+      id: orderId,
+      order_number: orderNumber,
+      customer_id: userId,
+      project_id: projectId,
+      email: checkout.email,
+      full_name: `${checkout.firstName} ${checkout.lastName}`.trim(),
+      phone: checkout.phone,
+      subtotal: totals.subtotal,
+      install_total: totals.installTotal,
+      design_total: totals.designTotal,
+      surcharges_total: totals.surchargesTotal,
+      shipping_total: 0,
+      tax_total: totals.tax,
+      grand_total: totals.grandTotal,
+      payment_method: checkout.paymentMethod,
+      payment_status: 'pending',
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      items: cart,
+      shipping_address: {
+        line1: checkout.address1,
+        line2: checkout.address2,
+        city: checkout.city,
+        state: checkout.state,
+        zip: checkout.zip,
+      },
+    };
+    saveDemoOrder(order);
+    return { orderId, orderNumber, error: null };
+  }
+
   // Generate order number
   const { data: seqData } = await supabase
     .rpc('generate_order_number');
@@ -104,6 +160,9 @@ export async function createOrder(
 }
 
 export async function getOrder(orderId: string) {
+  if (!isSupabaseConfigured) {
+    return { order: loadDemoOrders()[orderId] || null, error: null };
+  }
   const { data, error } = await supabase
     .from('orders')
     .select('*')
@@ -113,10 +172,20 @@ export async function getOrder(orderId: string) {
 }
 
 export async function getOrderByNumber(orderNumber: string) {
+  if (!isSupabaseConfigured) {
+    const match = Object.values(loadDemoOrders()).find(o => o.order_number === orderNumber);
+    return { order: match || null, error: null };
+  }
   const { data, error } = await supabase
     .from('orders')
     .select('*')
     .eq('order_number', orderNumber)
     .single();
   return { order: data, error };
+}
+
+/** All demo orders, newest first — used by the account/orders view in demo mode. */
+export function getDemoOrders(): Record<string, unknown>[] {
+  return Object.values(loadDemoOrders())
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
 }

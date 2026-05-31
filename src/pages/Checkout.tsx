@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
 import { createOrder } from '@/lib/orders';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { PAYMENT_METHODS, PAYMENT_CATEGORIES, getZelleInstructions, getCashAppInstructions, type PaymentMethod } from '@/lib/payment-engine';
 
 type Step = 'contact' | 'shipping' | 'payment' | 'confirm';
@@ -77,8 +78,10 @@ export default function Checkout() {
   };
 
   const handlePlaceOrder = async () => {
-    if (!user) {
-      // Prompt sign in
+    // With a real backend, an account is required so the customer can track
+    // their order. In demo mode (no backend) we allow guest checkout so the
+    // full purchase flow completes end-to-end.
+    if (!user && isSupabaseConfigured) {
       toast({ title: 'Sign in required', description: 'Please sign in or create an account to place your order.', variant: 'destructive' });
       navigate('/auth');
       return;
@@ -86,12 +89,12 @@ export default function Checkout() {
 
     setPlacing(true);
 
-    // Sync cart to Supabase
-    const projectId = await syncToSupabase();
+    // Sync cart to Supabase (no-op for guests / demo mode)
+    const projectId = user ? await syncToSupabase() : null;
 
     // Create the order
     const result = await createOrder(
-      user.id,
+      user?.id ?? 'guest',
       projectId,
       cart,
       {

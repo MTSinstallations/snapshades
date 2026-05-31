@@ -136,6 +136,7 @@ export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'options' | 'colors'>('overview');
+  const [selectedSwatch, setSelectedSwatch] = useState<Swatch | null>(null);
 
   const product = slug ? PRODUCT_BY_SLUG[slug] : undefined;
 
@@ -379,7 +380,7 @@ export default function ProductDetail() {
                   )}
 
                   {/* Surcharges */}
-                  {product.surcharges.length > 0 && (
+                  {product.surcharges && product.surcharges.length > 0 && (
                     <>
                       <h3 className="text-sm font-semibold text-gray-900 mb-3">Available Add-ons & Upgrades</h3>
                       <div className="rounded-xl border border-gray-200 overflow-hidden">

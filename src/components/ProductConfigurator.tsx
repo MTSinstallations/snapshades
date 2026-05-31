@@ -190,7 +190,7 @@ export default function ProductConfigurator({ productSlug, productName, windows,
               try {
                 const SWATCHES_KEY = 'snapshades_swatches';
                 const windowId = configs[activeWindowIdx]?.id || 'unknown';
-                const existing: Record<string, any> = JSON.parse(localStorage.getItem(SWATCHES_KEY) || '{}');
+                const existing: Record<string, unknown> = JSON.parse(localStorage.getItem(SWATCHES_KEY) || '{}');
                 existing[windowId] = {
                   swatchId: swatch.id,
                   swatchName: swatch.name,

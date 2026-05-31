@@ -1,7 +1,7 @@
 import SnapShadesLogo from "@/components/SnapShadesLogo";
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Trash2, ArrowLeftRight, Plus, ShoppingCart, CreditCard, X, ChevronDown, ChevronUp, Clock, Truck, ArrowLeft } from 'lucide-react';
+import { Trash2, ArrowLeftRight, Plus, ShoppingCart, CreditCard, X, ChevronDown, ChevronUp, Clock, Truck, ArrowLeft, Wrench, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCart } from '@/hooks/useCart';
@@ -46,6 +46,7 @@ export default function Cart() {
     cart, rooms, loading,
     removeWindow, updateWindow,
     subtotal, tax, grandTotal, windowCount,
+    installTotal, designTotal, surchargesTotal,
   } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [editingWindowId, setEditingWindowId] = useState<string | null>(null);
@@ -54,12 +55,14 @@ export default function Cart() {
 
   const editingWindow = editingWindowId ? cart.find(w => w.id === editingWindowId) : null;
 
-  // Calculate shipping from cart items
+  // Shipping is free to the customer on every order (brand promise: free
+  // shipping nationwide). We still compute the quote to surface the delivery
+  // estimate; the cost itself is absorbed, never added to the customer total.
   const shippingItems = cart
     .filter(w => w.productId && w.width)
     .map(w => ({ productSlug: w.productId, width: w.width, height: w.height }));
   const shippingQuote = calculateShipping(shippingItems);
-  const totalWithShipping = grandTotal + shippingQuote.subtotal;
+  const totalWithShipping = grandTotal;
 
   const toggleExpand = (id: string) => {
     setExpandedWindows(prev => {
@@ -405,13 +408,33 @@ export default function Cart() {
                     <span className="text-gray-500">Products ({windowCount} windows)</span>
                     <span className="font-medium">${subtotal.toFixed(2)}</span>
                   </div>
+                  {installTotal > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 flex items-center gap-1">
+                        <Wrench className="w-3.5 h-3.5" /> Professional Installation
+                      </span>
+                      <span className="font-medium">${installTotal.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {designTotal > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 flex items-center gap-1">
+                        <Palette className="w-3.5 h-3.5" /> Design Consultation
+                      </span>
+                      <span className="font-medium">${designTotal.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {surchargesTotal > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Add-ons & Upgrades</span>
+                      <span className="font-medium">${surchargesTotal.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-gray-500 flex items-center gap-1">
                       <Truck className="w-3.5 h-3.5" /> Shipping
                     </span>
-                    <span className="font-medium">
-                      {shippingQuote.subtotal > 0 ? `$${shippingQuote.subtotal.toFixed(2)}` : '—'}
-                    </span>
+                    <span className="font-medium text-green-600">FREE</span>
                   </div>
                   {shippingQuote.estimatedDays !== '—' && (
                     <div className="text-xs text-gray-400 pl-5">

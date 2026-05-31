@@ -481,7 +481,7 @@ async function logPaymentEvent(event: PaymentEvent): Promise<void> {
     steps_completed: event,
     contractors_matched: 0,
     pricing_zone: 0,
-    warnings: (event as any).error ? [(event as any).error as string] : [],
+    warnings: (event as { error?: string }).error ? [(event as { error?: string }).error as string] : [],
   });
 }
 

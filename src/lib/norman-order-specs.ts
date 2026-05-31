@@ -34,6 +34,8 @@ export interface OrderField {
   helpText?: string;
   dependsOn?: { field: string; value: string | string[] };  // Show only when dependency met
   portalSection?: string;  // Which section of the portal this maps to
+  surcharge?: number;      // Flat upcharge applied when a boolean field is enabled
+  displayHint?: 'image-card' | 'dropdown' | 'radio' | 'swatch';  // How the picker should render this field
 }
 
 // ============================================================

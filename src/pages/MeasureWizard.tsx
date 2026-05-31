@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Camera, ArrowRight, ArrowLeft, CheckCircle, HelpCircle, BookOpen, Zap, Plus, Home, Eye, Sparkles, DollarSign, Sofa, Bed, BedDouble, ChefHat, Bath, Briefcase, UtensilsCrossed, Baby, DoorOpen, Shirt, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -63,26 +64,42 @@ const TOTAL_STEPS = 7; // room, overview, width, height, depth, product, review
 const STORAGE_KEY = 'snapshades_wizard_state';
 const SWATCHES_KEY = 'snapshades_swatches';
 
+interface SwatchSelection {
+  swatchId: string;
+  swatchName: string;
+  swatchCollection: string;
+  swatchImageUrl: string;
+  swatchColor?: string;
+  swatchOpacity?: string;
+  swatchCode?: string;
+}
+
 interface SwatchSelections {
-  [windowId: string]: {
-    swatchId: string;
-    swatchName: string;
-    swatchCollection: string;
-    swatchImageUrl: string;
-    swatchColor?: string;
-    swatchOpacity?: string;
-    swatchCode?: string;
-  };
+  [windowId: string]: SwatchSelection;
+}
+
+interface ProductSelection {
+  productSlug: string;
+  productName: string;
+  selections: Record<string, string | number | boolean>;
+}
+
+interface WizardState {
+  step: number;
+  measurement: WindowMeasurement;
+  sameHeight: boolean;
+  windows: WindowMeasurement[];
+  productSelection: ProductSelection | null;
 }
 
 // Auto-save state to localStorage
-function saveWizardState(state: { step: number; measurement: any; sameHeight: boolean; windows: any[]; productSelection: any }) {
+function saveWizardState(state: WizardState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch { /* ignore */ }
 }
 
-function loadWizardState(): { step: number; measurement: any; sameHeight: boolean; windows: any[]; productSelection: any } | null {
+function loadWizardState(): WizardState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -94,7 +111,7 @@ function clearWizardState() {
   try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(SWATCHES_KEY); } catch { /* ignore */ }
 }
 
-export function saveSwatchSelections(windowId: string, swatch: any) {
+export function saveSwatchSelections(windowId: string, swatch: SwatchSelection) {
   try {
     const existing: SwatchSelections = JSON.parse(localStorage.getItem(SWATCHES_KEY) || '{}');
     existing[windowId] = swatch;
@@ -115,7 +132,7 @@ function ConfettiBurst({ active }: { active: boolean }) {
   return (
     <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
       {Array.from({ length: 40 }).map((_, i) => (
-        <div
+        <motion.div
           key={i}
           className="absolute w-2.5 h-2.5 rounded-full"
           style={{
@@ -206,10 +223,7 @@ export default function MeasureWizard() {
   const [windows, setWindows] = useState<WindowMeasurement[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const [windowPhotoUrl, setWindowPhotoUrl] = useState<string | null>(null);
-  const [productSelection, setProductSelection] = useState<{
-    productSlug: string; productName: string;
-    selections: Record<string, string | number | boolean>;
-  } | null>(null);
+  const [productSelection, setProductSelection] = useState<ProductSelection | null>(null);
   // Category chosen from ProductCategoryComparison; null = show the comparison
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   // Custom room-name input is hidden until the user explicitly chooses it
@@ -220,6 +234,21 @@ export default function MeasureWizard() {
     | { windowId: string; field: 'width' | 'height' | 'depth'; roomName: string }
     | null
   >(null);
+  const [proInstallAvailable, setProInstallAvailable] = useState<boolean | null>(null);
+
+  const checkZip = useCallback(async (zip: string) => {
+    if (zip.length !== 5) return;
+    try {
+      const { data } = await supabase
+        .from('territories')
+        .select('pro_install_available, status')
+        .eq('zip', zip)
+        .single();
+      setProInstallAvailable(data?.pro_install_available === true && data?.status === 'active');
+    } catch {
+      setProInstallAvailable(false);
+    }
+  }, []);
 
   /** Add a new empty window in the given room; stacks below and numbers
    *  within-room (e.g. Bedroom #1, Bedroom #2). */
@@ -318,29 +347,14 @@ export default function MeasureWizard() {
   const estimatedPrice = (() => {
     if (!productSelection?.productSlug) return null;
     const product = ALL_PRODUCTS.find(p => p.slug === productSelection.productSlug);
-    if (!product?.priceGrid) return null;
+    const variant = product?.variants?.[0];
+    if (!variant?.priceGrid) return null;
     const w = parseFloat(measurement.topWidth) || 0;
     const h = parseFloat(measurement.leftHeight) || 0;
     if (!w || !h) return null;
-    const result = getCustomerPrice(product.priceGrid, w, h);
+    const result = getCustomerPrice(variant.priceGrid, w, h);
     return result?.price ?? null;
   })();
-
-  const [proInstallAvailable, setProInstallAvailable] = useState<boolean | null>(null);
-
-  const checkZip = useCallback(async (zip: string) => {
-    if (zip.length !== 5) return;
-    try {
-      const { data } = await supabase
-        .from('territories')
-        .select('pro_install_available, status')
-        .eq('zip', zip)
-        .single();
-      setProInstallAvailable(data?.pro_install_available === true && data?.status === 'active');
-    } catch {
-      setProInstallAvailable(false);
-    }
-  }, []);
 
   const showPriceBar = productSelection?.productSlug && (estimatedPrice !== null || (measurement.topWidth && measurement.leftHeight));
 

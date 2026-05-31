@@ -163,7 +163,7 @@ export default function Swatches() {
             </select>
             <select
               value={sortBy}
-              onChange={e => setSortBy(e.target.value as any)}
+              onChange={e => setSortBy(e.target.value as 'popular' | 'light-dark' | 'collection')}
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 outline-none focus:border-blue-400 flex-shrink-0"
             >
               <option value="popular">Popular</option>

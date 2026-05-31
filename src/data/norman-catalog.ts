@@ -58,7 +58,7 @@ export interface Product {
     options?: string[];
     surcharges?: Surcharge[];
   };
-  surcharges: Surcharge[];
+  surcharges?: Surcharge[];
   variants: ProductVariant[];
   imageUrls: {
     hero: string;
