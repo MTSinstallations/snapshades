@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound.tsx";
 
 // Lazy: loaded on demand (reduces initial bundle ~60%)
 const ProductDetail = lazy(() => import("./pages/ProductDetail.tsx"));
+const QuickOrder = lazy(() => import("./pages/QuickOrder.tsx"));
 const StartProject = lazy(() => import("./pages/StartProject.tsx"));
 const MeasureWizard = lazy(() => import("./pages/MeasureWizard.tsx"));
 const Cart = lazy(() => import("./pages/Cart.tsx"));
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
+          <Route path="/order" element={<QuickOrder />} />
           <Route path="/start" element={<StartProject />} />
           <Route path="/measure/:mode" element={<MeasureWizard />} />
           <Route path="/add-window" element={<AddWindowForm />} />

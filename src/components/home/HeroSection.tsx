@@ -74,17 +74,32 @@ export default function HeroSection() {
             and Onyx. You do the work. You <span className="text-ink font-semibold">save up to 60%</span>.
           </motion.p>
 
+          {/* 1-2-3: the whole order in three steps */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-warm-gray-500"
+          >
+            {["Measure", "Customize", "Pay"].map((label, i) => (
+              <span key={label} className="inline-flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-clay/15 text-clay text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                <span className="text-ink">{label}</span>
+              </span>
+            ))}
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+            className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
           >
             <Link
-              to="/start"
+              to="/order"
               className="inline-flex items-center justify-center gap-2 bg-clay hover:bg-clay-hover text-primary-foreground px-7 py-4 rounded-md text-base font-semibold shadow-sm transition-colors"
             >
-              Start My Project
+              Order in 3 Steps
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
@@ -101,7 +116,8 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.36 }}
             className="mt-6 text-xs text-warm-gray-500"
           >
-            Today&apos;s swatch order <span className="text-ink font-semibold">locks your price for 30 days</span>.
+            Know your measurements? You&apos;re 60 seconds from done.{" "}
+            <Link to="/start" className="text-ink font-semibold underline-offset-2 hover:underline">New to this? We&apos;ll guide you →</Link>
           </motion.p>
         </div>
       </div>
