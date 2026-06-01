@@ -1,8 +1,11 @@
 import SnapShadesLogo from "@/components/SnapShadesLogo";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import CrmInbox from '@/components/crm/CrmInbox';
+import { useCrmChat } from '@/hooks/useCrmChat';
+import { DEMO_CUSTOMER, type Viewer } from '@/lib/crm-chat';
 import {
   User, Package, Clock, Settings, LogOut, ChevronRight, Eye, Truck, Calendar,
   Wrench, Camera, FileText, ShoppingCart, Star, Shield, Download, Image,
@@ -12,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
-type Tab = 'dashboard' | 'orders' | 'projects' | 'photos' | 'documents' | 'settings';
+type Tab = 'dashboard' | 'orders' | 'projects' | 'photos' | 'messages' | 'documents' | 'settings';
 
 interface Order {
   id: string; order_number: string; created_at: string; status: string;
@@ -121,6 +124,14 @@ export default function CustomerPortal() {
     toast(error ? { title: 'Error', description: error.message, variant: 'destructive' } : { title: 'Saved!' });
   };
 
+  const chatViewer: Viewer = useMemo(
+    () => user
+      ? { role: 'customer', id: user.id, name: profile.full_name || user.email || 'You', email: user.email || undefined }
+      : { role: 'customer', id: DEMO_CUSTOMER.id, name: DEMO_CUSTOMER.name, email: DEMO_CUSTOMER.email },
+    [user, profile.full_name],
+  );
+  const { unreadTotal: msgUnread } = useCrmChat(chatViewer);
+
   if (authLoading || !user) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -171,6 +182,7 @@ export default function CustomerPortal() {
             { key: 'orders' as const, label: 'Orders', icon: Package },
             { key: 'projects' as const, label: 'Projects', icon: Camera },
             { key: 'photos' as const, label: 'Photos', icon: Image },
+            { key: 'messages' as const, label: 'Messages', icon: MessageSquare },
             { key: 'documents' as const, label: 'Documents', icon: FileText },
             { key: 'settings' as const, label: 'Settings', icon: Settings },
           ].map(t => (
@@ -181,6 +193,9 @@ export default function CustomerPortal() {
               <t.icon className="w-4 h-4" />{t.label}
               {t.key === 'orders' && activeOrders.length > 0 && (
                 <span className="bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{activeOrders.length}</span>
+              )}
+              {t.key === 'messages' && msgUnread > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${tab === 'messages' ? 'bg-white/25 text-white' : 'bg-blue-500 text-white'}`}>{msgUnread}</span>
               )}
             </button>
           ))}
@@ -402,6 +417,15 @@ export default function CustomerPortal() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── MESSAGES ── */}
+        {tab === 'messages' && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Messages</h2>
+            <p className="text-sm text-gray-500 mb-4">Questions about an order or install? Message our team — we usually reply within a few hours.</p>
+            <CrmInbox viewer={chatViewer} heightClass="h-[68vh]" />
           </div>
         )}
 

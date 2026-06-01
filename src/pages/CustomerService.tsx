@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import SnapShadesLogo from '@/components/SnapShadesLogo';
 import { SNAPSHADES_POLICIES, MANUFACTURER_WARRANTIES, getWarrantyForProduct, type PolicySection, type ManufacturerWarranty } from '@/lib/warranty-info';
 import { WARRANTY_POLICY, INSTALL_GUIDES, type InstallGuide } from '@/lib/warranty-returns-engine';
+import { openOrStartConversation } from '@/lib/crm-chat';
 
 type Tab = 'help' | 'warranty' | 'claims' | 'guides' | 'contact';
 
@@ -20,6 +21,25 @@ export default function CustomerService() {
   const [claimOrder, setClaimOrder] = useState('');
   const [claimType, setClaimType] = useState('');
   const [claimDescription, setClaimDescription] = useState('');
+
+  // Contact form → opens a CRM conversation with the support team
+  const [contact, setContact] = useState({ name: '', email: '', order: '', message: '' });
+  const [contactSending, setContactSending] = useState(false);
+  const [contactSent, setContactSent] = useState(false);
+
+  const sendContactMessage = async () => {
+    if (!contact.name.trim() || !contact.email.trim() || !contact.message.trim()) return;
+    setContactSending(true);
+    const slug = contact.email.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    await openOrStartConversation({
+      party: { kind: 'customer', id: `cust-${slug || 'guest'}`, name: contact.name.trim(), email: contact.email.trim() },
+      subject: contact.order.trim() ? `Order ${contact.order.trim()}` : 'Website inquiry',
+      orderRef: contact.order.trim() || undefined,
+      initialMessage: { role: 'customer', authorName: contact.name.trim(), body: contact.message.trim() },
+    });
+    setContactSending(false);
+    setContactSent(true);
+  };
 
   const tabs = [
     { key: 'help' as Tab, icon: HelpCircle, label: 'Help Center' },
@@ -484,16 +504,43 @@ export default function CustomerService() {
 
             <Card>
               <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Send Us a Message</h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><label className="text-sm text-gray-700 block mb-1">Name</label><input type="text" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none" /></div>
-                    <div><label className="text-sm text-gray-700 block mb-1">Email</label><input type="email" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none" /></div>
+                {contactSent ? (
+                  <div className="text-center py-8">
+                    <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Check className="w-7 h-7 text-green-500" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">Message sent!</h3>
+                    <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
+                      Our team has your message and will reply by email{contact.order.trim() ? ` about order ${contact.order.trim()}` : ''}. If you have an account, you can follow the conversation under <strong>Messages</strong>.
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-5 rounded-full"
+                      onClick={() => { setContactSent(false); setContact({ name: '', email: '', order: '', message: '' }); }}
+                    >
+                      Send another message
+                    </Button>
                   </div>
-                  <div><label className="text-sm text-gray-700 block mb-1">Order Number (optional)</label><input type="text" placeholder="SS-010001" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none" /></div>
-                  <div><label className="text-sm text-gray-700 block mb-1">Message</label><textarea rows={4} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none resize-none" /></div>
-                  <Button className="w-full bg-blue-600 text-white rounded-full py-5 font-semibold">Send Message</Button>
-                </div>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-gray-900 mb-4">Send Us a Message</h3>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><label className="text-sm text-gray-700 block mb-1">Name</label><input type="text" value={contact.name} onChange={e => setContact(c => ({ ...c, name: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-400 outline-none" /></div>
+                        <div><label className="text-sm text-gray-700 block mb-1">Email</label><input type="email" value={contact.email} onChange={e => setContact(c => ({ ...c, email: e.target.value }))} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-400 outline-none" /></div>
+                      </div>
+                      <div><label className="text-sm text-gray-700 block mb-1">Order Number (optional)</label><input type="text" value={contact.order} onChange={e => setContact(c => ({ ...c, order: e.target.value }))} placeholder="SS-010001" className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-400 outline-none" /></div>
+                      <div><label className="text-sm text-gray-700 block mb-1">Message</label><textarea value={contact.message} onChange={e => setContact(c => ({ ...c, message: e.target.value }))} rows={4} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-400 outline-none resize-none" /></div>
+                      <Button
+                        className="w-full bg-blue-600 text-white rounded-full py-5 font-semibold disabled:opacity-50"
+                        disabled={contactSending || !contact.name.trim() || !contact.email.trim() || !contact.message.trim()}
+                        onClick={sendContactMessage}
+                      >
+                        {contactSending ? 'Sending…' : 'Send Message'}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -85,3 +85,11 @@ export type ServiceTier = 'ship' | 'install' | 'design';
 // ── Payment ──
 
 export type PaymentStatus = 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded';
+
+// ── CRM Chat / Conversations ──
+
+export type ConversationStatus = 'open' | 'snoozed' | 'resolved';
+
+export const CONVERSATION_STATUSES: readonly ConversationStatus[] = [
+  'open', 'snoozed', 'resolved',
+] as const;

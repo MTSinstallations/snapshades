@@ -1,12 +1,15 @@
 import SnapShadesLogo from "@/components/SnapShadesLogo";
 import { useState, useMemo } from 'react';
-import { Camera, Calendar, Clock, Settings, User, MapPin, Star, ChevronRight, ChevronLeft, Check, X, Plus, Trash2, Bell, DollarSign, BarChart3, FileText, Ruler, Save, Send, Phone, Mail, Wallet } from 'lucide-react';
+import { Camera, Calendar, Clock, Settings, User, MapPin, Star, ChevronRight, ChevronLeft, Check, X, Plus, Trash2, Bell, DollarSign, BarChart3, FileText, Ruler, Save, Send, Phone, Mail, Wallet, MessageSquare } from 'lucide-react';
 import ContractorAccounting from '@/components/ContractorAccounting';
+import CrmInbox from '@/components/crm/CrmInbox';
+import { useCrmChat } from '@/hooks/useCrmChat';
+import type { Viewer } from '@/lib/crm-chat';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ALL_SLOTS, type SlotTime, type ServiceType } from '@/lib/scheduling-engine';
 
-type Tab = 'dashboard' | 'availability' | 'bookings' | 'job-detail' | 'measure-sheet' | 'earnings' | 'settings';
+type Tab = 'dashboard' | 'availability' | 'bookings' | 'job-detail' | 'measure-sheet' | 'earnings' | 'messages' | 'settings';
 
 const DAY_NAMES_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAY_NAMES_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -30,6 +33,8 @@ const CONTRACTOR = {
   completedJobs: 247,
   earnings: { thisMonth: 3750, lastMonth: 4200, total: 42350 },
 };
+
+const CONTRACTOR_VIEWER: Viewer = { role: 'contractor', id: CONTRACTOR.id, name: CONTRACTOR.name };
 
 interface JobOrder {
   id: string;
@@ -132,6 +137,7 @@ const DEMO_JOBS: JobOrder[] = [
 export default function ContractorPortal() {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const { unreadTotal: msgUnread } = useCrmChat(CONTRACTOR_VIEWER);
 
   // Calendar state
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -300,6 +306,7 @@ export default function ContractorPortal() {
                 { key: 'dashboard' as Tab, icon: BarChart3, label: 'Dashboard' },
                 { key: 'availability' as Tab, icon: Calendar, label: 'My Calendar' },
                 { key: 'bookings' as Tab, icon: FileText, label: 'Jobs' },
+                { key: 'messages' as Tab, icon: MessageSquare, label: 'Messages' },
                 { key: 'earnings' as Tab, icon: Wallet, label: 'Earnings' },
                 { key: 'settings' as Tab, icon: Settings, label: 'Settings' },
               ] as const).map(item => (
@@ -315,6 +322,11 @@ export default function ContractorPortal() {
                   {item.key === 'bookings' && (
                     <span className="ml-auto text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
                       {DEMO_JOBS.filter(j => j.status === 'pending').length}
+                    </span>
+                  )}
+                  {item.key === 'messages' && msgUnread > 0 && (
+                    <span className="ml-auto text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">
+                      {msgUnread}
                     </span>
                   )}
                 </button>
@@ -931,6 +943,17 @@ export default function ContractorPortal() {
             {/* EARNINGS */}
             {/* ============================================================ */}
             {tab === 'earnings' && <ContractorAccounting />}
+
+            {/* ============================================================ */}
+            {/* MESSAGES */}
+            {/* ============================================================ */}
+            {tab === 'messages' && (
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Messages</h2>
+                <p className="text-sm text-gray-500 mb-4">Chat with the SnapShades team about your jobs, schedule, and payouts.</p>
+                <CrmInbox viewer={CONTRACTOR_VIEWER} heightClass="h-[68vh]" />
+              </div>
+            )}
 
             {/* SETTINGS */}
             {/* ============================================================ */}

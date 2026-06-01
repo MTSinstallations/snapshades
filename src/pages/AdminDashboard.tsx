@@ -5,11 +5,16 @@ import {
   BarChart3, DollarSign, Package, Users, Wrench, MapPin, ShieldCheck,
   TrendingUp, AlertTriangle, Clock, CheckCircle, XCircle, Eye,
   ArrowUpRight, ArrowDownRight, ChevronRight, FileText, CreditCard,
-  Globe, Star, Zap, Activity
+  Globe, Star, Zap, Activity, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { fetchDashboardStats, type DashboardStats } from '@/lib/admin-stats';
+import CrmInbox from '@/components/crm/CrmInbox';
+import { useCrmChat } from '@/hooks/useCrmChat';
+import { STAFF_NAME, type Viewer } from '@/lib/crm-chat';
+
+const STAFF_VIEWER: Viewer = { role: 'staff', name: STAFF_NAME };
 
 // Status colors
 const STATUS_COLORS: Record<string, string> = {
@@ -124,7 +129,8 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'contractors' | 'territories' | 'compliance'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'contractors' | 'territories' | 'messages' | 'compliance'>('overview');
+  const { unreadTotal } = useCrmChat(STAFF_VIEWER);
 
   useEffect(() => {
     fetchDashboardStats().then(data => { setStats(data); setLoading(false); });
@@ -187,6 +193,7 @@ export default function AdminDashboard() {
             { key: 'orders' as const, label: 'Orders', icon: Package },
             { key: 'contractors' as const, label: 'Contractors', icon: Wrench },
             { key: 'territories' as const, label: 'Territories', icon: MapPin },
+            { key: 'messages' as const, label: 'Messages', icon: MessageSquare },
             { key: 'compliance' as const, label: 'Compliance', icon: ShieldCheck },
           ].map(tab => (
             <button
@@ -198,6 +205,11 @@ export default function AdminDashboard() {
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
+              {tab.key === 'messages' && unreadTotal > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === 'messages' ? 'bg-white/25 text-white' : 'bg-blue-600 text-white'}`}>
+                  {unreadTotal}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -533,6 +545,11 @@ export default function AdminDashboard() {
               </Card>
             </div>
           </>
+        )}
+
+        {/* ══════ MESSAGES TAB ══════ */}
+        {activeTab === 'messages' && (
+          <CrmInbox viewer={STAFF_VIEWER} />
         )}
 
         {/* ══════ COMPLIANCE TAB ══════ */}
