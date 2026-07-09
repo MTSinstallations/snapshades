@@ -1,74 +1,37 @@
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SnapShadesLogo from '@/components/SnapShadesLogo';
+import { SUPPORT_EMAIL } from '@/lib/constants';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-400">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <a href="/" className="flex items-center gap-2 mb-4">
-              <SnapShadesLogo size={28} />
-              <span className="text-xl font-bold text-white">Snap<span className="text-blue-400">Shades</span></span>
-            </a>
-            <p className="text-sm leading-relaxed">
-              Custom window treatments measured by phone. Premium products at wholesale prices, shipped or professionally installed.
+    <footer className="border-t border-white/10 bg-ink text-white">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-col justify-between gap-8 md:flex-row md:items-start">
+          <div className="max-w-sm">
+            <Link to="/" className="flex items-center gap-2.5">
+              <SnapShadesLogo size={30} />
+              <span className="text-xl font-semibold">
+                Snap<span className="text-[#ef7a58]">Shades</span>
+              </span>
+            </Link>
+            <p className="mt-4 text-sm leading-6 text-white/60">
+              Three practical window coverings, custom made and shipped direct at supplier cost plus 10%.
             </p>
-            <div className="mt-4 space-y-2">
-              <a href="mailto:support@snapshades.com" className="flex items-center gap-2 text-sm hover:text-white transition">
-                <Mail className="w-4 h-4" /> support@snapshades.com
-              </a>
-              <a href="tel:+18885550123" className="flex items-center gap-2 text-sm hover:text-white transition">
-                <Phone className="w-4 h-4" /> (888) 555-0123
-              </a>
-              <div className="flex items-center gap-2 text-sm">
-                <MapPin className="w-4 h-4" /> Nationwide — All 50 States
-              </div>
-            </div>
           </div>
 
-          {/* Products */}
-          <div>
-            <h4 className="font-semibold text-white mb-3">Products</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/products/portrait-honeycomb" className="hover:text-white transition">Honeycomb Shades</a></li>
-              <li><a href="/products/soluna-roller" className="hover:text-white transition">Roller Shades</a></li>
-              <li><a href="/products/plantation-shutters" className="hover:text-white transition">Plantation Shutters</a></li>
-              <li><a href="/products/centerpiece-roman" className="hover:text-white transition">Roman Shades</a></li>
-              <li><a href="/products/smartdrape" className="hover:text-white transition">SmartDrape Shades</a></li>
-              <li><a href="/products/ultimate-faux-wood" className="hover:text-white transition">Faux Wood Blinds</a></li>
-              <li><a href="/products" className="hover:text-white transition">All Products →</a></li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="font-semibold text-white mb-3">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/swatches" className="hover:text-white transition">Digital Swatches</a></li>
-              <li><a href="/start" className="hover:text-white transition">Start a Project</a></li>
-              <li><a href="/installers" className="hover:text-white transition">Become an Installer</a></li>
-              <li><a href="/account" className="hover:text-white transition">My Account</a></li>
-              <li><a href="#faq" className="hover:text-white transition">FAQ</a></li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="font-semibold text-white mb-3">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/privacy" className="hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="/terms" className="hover:text-white transition">Terms of Service</a></li>
-              <li><a href="/returns" className="hover:text-white transition">Return Policy</a></li>
-              <li><a href="/warranty" className="hover:text-white transition">Warranty Info</a></li>
-            </ul>
+          <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm text-white/70">
+            <a href="/#products" className="hover:text-white">Products</a>
+            <a href="/#measure" className="hover:text-white">Measure guide</a>
+            <Link to="/order" className="hover:text-white">Start order</Link>
+            <Link to="/cart" className="hover:text-white">Cart</Link>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-white">Email support</a>
+            <Link to="/account" className="hover:text-white">My account</Link>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs">© 2026 SnapShades LLC. All rights reserved.</p>
-          <p className="text-xs">Norman® is a registered trademark of Norman International.</p>
+        <div className="mt-9 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 SnapShades LLC.</p>
+          <p>Custom products are made to the measurements you submit.</p>
         </div>
       </div>
     </footer>

@@ -70,6 +70,8 @@ create table windows (
   left_height decimal(8,3),
   right_height decimal(8,3),
   depth decimal(8,3),
+  mount_type text default 'inside' check (mount_type in ('inside', 'outside')),
+  product_options jsonb default '{}'::jsonb,
   
   -- Computed (smallest dimension used for ordering)
   order_width decimal(8,3) generated always as (

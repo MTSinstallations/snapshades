@@ -105,6 +105,7 @@ export async function saveCartToSupabase(userId: string, cart: CartWindow[], pro
     await supabase.from('windows').upsert({
       id: w.id, room_id: roomId, project_id: pid, name: w.name,
       top_width: w.width, left_height: w.height, right_height: w.height, depth: w.depth,
+      mount_type: w.mountType || 'inside', product_options: w.productOptions || {},
       product_id: w.productId, variant_id: w.variantId, manufacturer: w.manufacturer,
       service_tier: w.tier, retail_price: w.retailPrice, our_cost: w.ourCost,
       customer_price: w.customerPrice, install_fee: w.installFee, design_fee: w.designFee,
@@ -147,6 +148,10 @@ export async function loadCartFromSupabase(userId: string): Promise<{ cart: Cart
     width: Number(w.top_width) || 0,
     height: Number(w.left_height) || 0,
     depth: Number(w.depth) || 0,
+    mountType: w.mount_type === 'outside' ? 'outside' : 'inside',
+    productOptions: w.product_options && typeof w.product_options === 'object'
+      ? w.product_options as Record<string, string>
+      : {},
     product: w.product_id || '',
     productId: w.product_id || '',
     variantId: w.variant_id || '',

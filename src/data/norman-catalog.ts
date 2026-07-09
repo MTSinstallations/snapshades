@@ -1,9 +1,11 @@
 /**
  * Norman® 2026 Product Catalog
  * Source: 2026 March Retail Price Guide (40 pages)
- * Pricing: Retail × 0.30 (dealer cost) × 1.20 (20% markup) = customer price
- * Formula: customerPrice = retailPrice * 0.36
+ * Pricing: Retail × 0.30 (dealer cost) × 1.10 (10% broker markup) = customer price
+ * Formula: customerPrice = retailPrice * 0.33
  */
+
+import { BROKER_MARKUP_RATE, DEALER_COST_RATE } from '@/lib/constants';
 
 // ============================================================
 // TYPES
@@ -348,10 +350,6 @@ export const portraitHoneycomb: Product = {
 // PRICING UTILITY
 // ============================================================
 
-const DEALER_DISCOUNT = 0.30;  // Our cost = 30% of retail
-const MARKUP = 1.20;           // Customer sees cost + 20%
-const PRICE_MULTIPLIER = DEALER_DISCOUNT * MARKUP; // = 0.36
-
 /**
  * Look up customer price from a retail price grid.
  * Rounds up to next grid size if exact width/height not found.
@@ -360,7 +358,14 @@ export function getCustomerPrice(
   grid: PriceGrid,
   widthInches: number,
   heightInches: number
-): { price: number; gridWidth: number; gridHeight: number } | null {
+): {
+  price: number;
+  retailPrice: number;
+  supplierCost: number;
+  brokerFee: number;
+  gridWidth: number;
+  gridHeight: number;
+} | null {
   // Find the smallest grid width >= requested width
   const widthIdx = grid.widths.findIndex(w => w >= widthInches);
   if (widthIdx === -1) return null; // Too wide
@@ -372,8 +377,15 @@ export function getCustomerPrice(
   const retailPrice = grid.prices[heightIdx][widthIdx];
   if (!retailPrice || retailPrice === 0) return null;
 
+  const supplierCost = Math.round(retailPrice * DEALER_COST_RATE * 100) / 100;
+  const brokerFee = Math.round(supplierCost * BROKER_MARKUP_RATE * 100) / 100;
+  const price = Math.round((supplierCost + brokerFee) * 100) / 100;
+
   return {
-    price: Math.ceil(retailPrice * PRICE_MULTIPLIER * 100) / 100, // Round up to nearest cent
+    price,
+    retailPrice,
+    supplierCost,
+    brokerFee,
     gridWidth: grid.widths[widthIdx],
     gridHeight: grid.heights[heightIdx],
   };
@@ -386,7 +398,8 @@ export function getSurchargePrice(surcharge: Surcharge, basePrice?: number): num
   if (surcharge.type === 'percent' && basePrice) {
     return Math.ceil(basePrice * (surcharge.price / 100) * 100) / 100;
   }
-  return Math.ceil(surcharge.price * PRICE_MULTIPLIER * 100) / 100;
+  const supplierCost = Math.round(surcharge.price * DEALER_COST_RATE * 100) / 100;
+  return Math.round(supplierCost * (1 + BROKER_MARKUP_RATE) * 100) / 100;
 }
 
 // ============================================================

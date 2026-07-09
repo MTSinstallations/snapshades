@@ -40,6 +40,8 @@ export const cartWindowSchema = z.object({
   width: z.number().min(6).max(240),
   height: z.number().min(6).max(240),
   depth: z.number().min(0).max(24),
+  mountType: z.enum(['inside', 'outside']).optional().default('inside'),
+  productOptions: z.record(z.string()).optional().default({}),
   productId: z.string().min(1),
   variantId: z.string().optional().default(''),
   manufacturer: z.string().default('Norman®'),

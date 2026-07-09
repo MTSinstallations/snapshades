@@ -18,7 +18,6 @@ interface SEOHeadProps {
 }
 
 import { SITE_URL, SITE_NAME } from '@/lib/constants';
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 export default function SEOHead({
   title,
@@ -31,7 +30,7 @@ export default function SEOHead({
 }: SEOHeadProps) {
   const fullTitle = `${title} | ${SITE_NAME}`;
   const canonicalUrl = canonical ? `${SITE_URL}${canonical}` : undefined;
-  const image = ogImage || DEFAULT_IMAGE;
+  const image = ogImage;
 
   return (
     <Helmet>
@@ -45,7 +44,7 @@ export default function SEOHead({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={ogType} />
-      <meta property="og:image" content={image} />
+      {image && <meta property="og:image" content={image} />}
       <meta property="og:site_name" content={SITE_NAME} />
       {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
 
@@ -53,7 +52,7 @@ export default function SEOHead({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={image} />
+      {image && <meta name="twitter:image" content={image} />}
 
       {/* Schema.org JSON-LD */}
       {schema && (
@@ -76,7 +75,7 @@ export function getOrganizationSchema() {
     name: 'SnapShades & Shutters',
     url: SITE_URL,
     logo: `${SITE_URL}/logo.svg`,
-    description: 'Custom window coverings at dealer-direct prices. Norman® blinds, shades, and shutters with free shipping and professional installation.',
+    description: 'Custom cellular shades, roller shades, and faux wood blinds at supplier cost plus 10%, with shipping included.',
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: '+1-888-555-0123',
@@ -98,7 +97,7 @@ export function getProductSchema(product: {
     name: product.name,
     description: product.description,
     brand: { '@type': 'Brand', name: product.brand || 'Norman®' },
-    image: product.image || DEFAULT_IMAGE,
+    ...(product.image ? { image: product.image } : {}),
     url: `${SITE_URL}/products/${product.slug}`,
     offers: {
       '@type': 'Offer',

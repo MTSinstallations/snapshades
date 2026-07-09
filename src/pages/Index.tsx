@@ -1,357 +1,230 @@
-import SnapShadesLogo from "@/components/SnapShadesLogo";
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Camera, Star, ArrowRight, CheckCircle, ChevronDown, Smartphone, Shield, Award } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { FadeIn, StaggerList, StaggerItem, HoverScale, PageTransition } from '@/components/ux';
-import { MagneticButton } from '@/components/ux';
-import Footer from '@/components/Footer';
+import { Link } from 'react-router-dom';
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  PackageCheck,
+  Ruler,
+  ShieldCheck,
+  Tag,
+} from 'lucide-react';
 import SiteHeader from '@/components/layout/SiteHeader';
-import HeroSection from '@/components/home/HeroSection';
-import DiscoveryGrid from '@/components/home/DiscoveryGrid';
-import { motion, AnimatePresence } from 'framer-motion';
+import Footer from '@/components/Footer';
+import ProductVisual from '@/components/value/ProductVisual';
+import SEOHead, { getFAQSchema } from '@/components/SEOHead';
+import { VALUE_PRODUCTS, getStartingPrice } from '@/data/value-products';
 
 const faqs = [
-  { q: 'How does the photo measurement system work?', a: 'Place a standard tape measure on your window and snap a photo with your phone. Our AI reads the tape measure from the photo and enters the measurements for you — no math required.' },
-  { q: 'What types of window coverings do you sell?', a: 'We sell blinds (faux wood, wood, aluminum), shades (roller, cellular/honeycomb, roman, sheer), and plantation shutters — all custom-made by top manufacturers like Norman® and Levolor® to fit your windows perfectly.' },
-  { q: 'How long does delivery take?', a: 'Custom orders ship in 4-6 weeks for shades and blinds, 6-8 weeks for shutters. Shipping rates are calculated at checkout based on your ZIP code.' },
-  { q: 'Can I see samples before ordering?', a: 'Yes! Browse our digital swatch gallery online to preview colors and materials. Request free physical swatches shipped to your door.' },
-  { q: 'What is the cheapest way to buy custom blinds online?', a: 'We sell direct from the manufacturer at a guaranteed lowest price — up to 60% below retail. No middleman, no showroom overhead.' },
-  { q: 'Do you offer a guarantee?', a: 'Yes. Our Price Guarantee means you won\'t find a lower price anywhere. If your window treatment doesn\'t fit due to a measurement error, we\'ll work with you to make it right.' },
-  { q: 'What manufacturers do you carry?', a: 'We carry Norman® (premium), Levolor® (mid-range), and Onyx (budget) — giving you options at every price point, all custom-made to your exact measurements.' },
+  {
+    question: 'Do I make a deduction for an inside mount?',
+    answer: 'No. Enter the exact inside width and height of the window opening. The factory makes the production deduction for the product you choose.',
+  },
+  {
+    question: 'What measurement do I enter for an outside mount?',
+    answer: 'Enter the finished width and height you want the shade or blind to cover. No factory deduction is made from an outside-mount order.',
+  },
+  {
+    question: 'How is my price calculated?',
+    answer: 'We start with our supplier cost and add 10%. Shipping and tax are not added to the customer total.',
+  },
+  {
+    question: 'Are these products cordless?',
+    answer: 'Cellular shades and faux wood blinds use cordless lift as standard. Roller shades use the control configuration shown during ordering.',
+  },
 ];
 
 export default function Index() {
-  const navigate = useNavigate();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
   return (
-    <PageTransition>
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-sand text-ink">
+      <SEOHead
+        title="Custom Shades and Blinds at Cost Plus 10%"
+        description="Order cellular shades, roller shades, and faux wood blinds in your exact inside- or outside-mount size. Supplier cost plus 10%, with shipping included."
+        canonical="/"
+        schema={getFAQSchema(faqs)}
+      />
       <SiteHeader />
 
-      <HeroSection />
-
-      <DiscoveryGrid />
-
-      {/* Legacy hero content kept for the FAQ/how-it-works sections below.
-          Phase 10 retrofit will harmonize the remaining colors.  */}
-      <section style={{ display: 'none' }} className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="text-center max-w-4xl mx-auto relative z-10">
-            <FadeIn>
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 bg-white/10 text-blue-200 px-4 py-1.5 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-white/10"
-              >
-                <Camera className="w-4 h-4" />
-                Snap a photo of your tape measure — AI reads it for you
-              </motion.div>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight leading-tight">
-                Custom Window Coverings.{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-sky-300">
-                  Less Money.
-                </span>
-              </h1>
-            </FadeIn>
-            <FadeIn delay={0.2}>
-              <p className="mt-6 text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                Straight from the manufacturer to your door — just less money. Measure with your phone, order online, delivered custom-made.
-              </p>
-            </FadeIn>
-            <FadeIn delay={0.3}>
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <MagneticButton
-                  className="w-full sm:w-auto bg-white text-blue-900 hover:bg-blue-50 rounded-full px-8 py-4 text-lg font-bold shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
-                  onClick={() => navigate("/start")}
-                >
-                  Start Your Project <ArrowRight className="w-5 h-5" />
-                </MagneticButton>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate("/products")}
-                  className="w-full sm:w-auto border-2 border-white/20 text-white rounded-full px-8 py-4 text-lg font-semibold hover:bg-white/10 transition-colors"
-                >
-                  Browse Products
-                </motion.button>
+      <main>
+        <section className="overflow-hidden border-b border-ink/10">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-28">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-warm-gray-500">
+                <Tag className="h-3.5 w-3.5 text-clay" />
+                Supplier cost + 10%
               </div>
-            </FadeIn>
-            <FadeIn delay={0.4}>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-blue-200">
-                {['Price Guarantee', 'Direct from Manufacturer', 'AI-Powered Measuring'].map(item => (
-                  <span key={item} className="flex items-center gap-1.5">
-                    <CheckCircle className="w-4 h-4 text-green-400" /> {item}
+              <h1 className="mt-6 text-5xl font-semibold leading-[0.96] tracking-[-0.055em] sm:text-6xl lg:text-7xl">
+                Custom window coverings. Without the markup.
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-warm-gray-500 sm:text-xl">
+                Choose one of three practical products, enter your measurements, and order. We keep 10% and ship it straight to you.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/order"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-clay px-6 py-3.5 font-semibold text-white transition-colors hover:bg-clay-hover"
+                >
+                  Start your order <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a
+                  href="#products"
+                  className="inline-flex items-center justify-center rounded-xl border border-ink/15 bg-white/60 px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-white"
+                >
+                  See the three products
+                </a>
+              </div>
+              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-warm-gray-500">
+                {['Inside or outside mount', '$0 shipping', '$0 tax'].map((item) => (
+                  <span key={item} className="inline-flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-clay" /> {item}
                   </span>
                 ))}
               </div>
-            </FadeIn>
-          </div>
-        </div>
-        {/* Decorative blobs */}
-        <div className="absolute top-10 left-10 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-sky-400 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" />
-        {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent" />
-      </section>
-
-      {/* QR Callout */}
-      <FadeIn>
-        <section className="py-12 bg-blue-600">
-          <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center justify-center gap-6 text-white text-center md:text-left">
-            <Smartphone className="w-10 h-10 text-blue-200" />
-            <div>
-              <h3 className="text-xl font-bold">On a computer? No problem.</h3>
-              <p className="text-blue-100 mt-1">Start here, then scan a QR code to continue on your phone for photo measurements.</p>
             </div>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/swatches')}
-              className="bg-white text-blue-700 hover:bg-blue-50 rounded-full px-6 py-2.5 font-medium whitespace-nowrap">
-              Browse Fabrics
-            </motion.button>
+
+            <div className="relative mx-auto w-full max-w-xl lg:mx-0">
+              <div className="absolute -inset-10 rounded-full bg-clay/10 blur-3xl" />
+              <ProductVisual type="cellular" className="relative mx-auto aspect-[4/5] w-[72%] min-w-[260px]" />
+              <div className="absolute -bottom-5 left-0 rounded-2xl border border-ink/10 bg-white p-4 shadow-xl sm:left-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-warm-gray-500">Your total</p>
+                <p className="mt-1 text-2xl font-semibold">Cost + 10%</p>
+                <p className="mt-1 text-xs text-warm-gray-500">Shipping $0 · Tax $0</p>
+              </div>
+            </div>
           </div>
         </section>
-      </FadeIn>
 
-      {/* Featured Fabrics Showcase */}
-      <section className="py-16 bg-gradient-to-b from-white to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-gray-900">150+ Premium Fabrics</h2>
-              <p className="mt-2 text-gray-600">From sheer to blackout — Norman®, Levolor®, and more</p>
+        <section id="products" className="scroll-mt-20 bg-white py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-clay">Only what people buy most</p>
+              <h2 className="mt-3 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">Three products. That’s it.</h2>
+              <p className="mt-4 text-lg leading-7 text-warm-gray-500">
+                We removed the catalog maze. Pick the function and look you need, then move on to measurements.
+              </p>
             </div>
-          </FadeIn>
-          <div className="mt-6 overflow-x-auto pb-2">
-            <div className="flex gap-3" style={{ width: 'max-content' }}>
-              {[
-                { name: 'Cloud White', collection: 'Portrait Honeycomb', img: 'https://normanusa.com/app/uploads/2020/03/C5004-Cloud-White.jpg', color: '#F8F6F0' },
-                { name: 'Jersey Cream', collection: 'Portrait Honeycomb', img: 'https://normanusa.com/app/uploads/2020/03/C5501-Jersey-Cream.jpg', color: '#F5F0E1' },
-                { name: 'Snow', collection: 'Perfect Sheer', img: 'https://normanusa.com/app/uploads/2020/03/PS-Snow.jpg', color: '#FAFAFA' },
-                { name: 'Walnut', collection: 'Faux Wood', img: 'https://normanusa.com/app/uploads/2020/03/FW-Walnut.jpg', color: '#5C4033' },
-                { name: 'Ivory', collection: 'Roman Shade', img: 'https://normanusa.com/app/uploads/2020/03/RS-Ivory.jpg', color: '#FFFFF0' },
-                { name: 'Midnight', collection: 'Soluna Roller', img: 'https://normanusa.com/app/uploads/2021/06/SR-Midnight.jpg', color: '#1A1A2E' },
-                { name: 'Oatmeal', collection: 'Portrait Honeycomb', img: 'https://normanusa.com/app/uploads/2020/03/C5503-Oatmeal.jpg', color: '#C8BFA8' },
-                { name: 'Seabrook', collection: 'Soluna Roller', img: 'https://normanusa.com/app/uploads/2021/06/SR-Seabrook.jpg', color: '#D4C5A9' },
-              ].map((swatch, i) => (
-                <motion.div
-                  key={swatch.name}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.06 }}
-                  whileHover={{ scale: 1.08, y: -4 }}
-                  className="flex-shrink-0 cursor-pointer group"
-                  onClick={() => navigate('/swatches')}
+
+            <div className="mt-12 grid gap-5 lg:grid-cols-3">
+              {VALUE_PRODUCTS.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/order?product=${product.id}`}
+                  className="group overflow-hidden rounded-3xl border border-ink/10 bg-sand p-4 transition-all hover:-translate-y-1 hover:border-ink/20 hover:shadow-xl"
                 >
-                  <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-shadow">
-                    <img src={swatch.img} alt={swatch.name} className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }} />
-                    <div className="w-full h-full hidden" style={{ backgroundColor: swatch.color }} />
-                  </div>
-                  <p className="text-xs font-semibold text-gray-800 mt-2 text-center">{swatch.name}</p>
-                  <p className="text-xs text-gray-400 text-center">{swatch.collection}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          <div className="text-center mt-8">
-            <Button onClick={() => navigate('/swatches')} variant="outline" className="rounded-full px-6 border-blue-200 text-blue-600 hover:bg-blue-50">
-              View All 150+ Swatches <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">How It Works</h2>
-              <p className="mt-4 text-lg text-gray-600">Three simple steps to beautiful windows</p>
-            </div>
-          </FadeIn>
-          <StaggerList className="grid md:grid-cols-3 gap-10 max-w-4xl mx-auto">
-            {[
-              { step: '1', title: 'Measure & Snap', desc: 'Place your tape measure on the window, snap a photo. Our AI reads the measurement — no math required.', icon: '📸' },
-              { step: '2', title: 'Pick Your Product', desc: 'Browse blinds, shades, and shutters. See real pricing for your exact window size. Choose your favorite.', icon: '🎨' },
-              { step: '3', title: 'We Deliver', desc: 'Custom-made by the manufacturer and shipped direct to your door in 4-6 weeks.', icon: '📦' },
-            ].map((s) => (
-              <StaggerItem key={s.step}>
-                <HoverScale>
-                  <div className="text-center group">
-                    <div className="w-16 h-16 bg-blue-50 text-3xl rounded-2xl flex items-center justify-center mx-auto group-hover:bg-blue-100 transition-colors">
-                      {s.icon}
+                  <ProductVisual
+                    type={product.visual}
+                    color={product.colors[1]?.value ?? product.colors[0].value}
+                    className="aspect-[5/4] w-full rounded-2xl border-[7px] shadow-md"
+                  />
+                  <div className="px-2 pb-2 pt-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-clay">{product.eyebrow}</p>
+                      <p className="text-sm font-semibold">From ${getStartingPrice(product).toFixed(2)}</p>
                     </div>
-                    <div className="mt-3 inline-flex items-center justify-center w-7 h-7 bg-blue-600 text-white text-xs font-bold rounded-full">{s.step}</div>
-                    <h3 className="mt-2 text-lg font-semibold text-gray-900">{s.title}</h3>
-                    <p className="mt-2 text-gray-600 text-sm leading-relaxed">{s.desc}</p>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-tight">{product.name}</h3>
+                    <p className="mt-2 min-h-12 text-sm leading-6 text-warm-gray-500">{product.description}</p>
+                    <ul className="mt-5 space-y-2 border-t border-ink/10 pt-5 text-sm">
+                      {product.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2">
+                          <Check className="h-4 w-4 text-clay" /> {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <span className="mt-6 inline-flex items-center gap-2 font-semibold text-ink">
+                      Choose {product.shortName.toLowerCase()} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </span>
                   </div>
-                </HoverScale>
-              </StaggerItem>
-            ))}
-          </StaggerList>
-        </div>
-      </section>
-
-      {/* Brand Trust Bar */}
-      <section className="py-10 bg-blue-900">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-white">
-            <div className="flex flex-col items-center gap-2">
-              <Shield className="w-8 h-8 text-blue-300" />
-              <p className="font-semibold text-sm">Made in the USA</p>
-              <p className="text-xs text-blue-200">Norman® manufacturing in Texas</p>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <Award className="w-8 h-8 text-blue-300" />
-              <p className="font-semibold text-sm">Manufacturer Warranty</p>
-              <p className="text-xs text-blue-200">Up to 25 years coverage</p>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <CheckCircle className="w-8 h-8 text-blue-300" />
-              <p className="font-semibold text-sm">Price Guarantee</p>
-              <p className="text-xs text-blue-200">Lowest price — guaranteed</p>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <Camera className="w-8 h-8 text-blue-300" />
-              <p className="font-semibold text-sm">AI Measuring</p>
-              <p className="text-xs text-blue-200">Snap a photo, we read it</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Value Proposition — Why SnapShades */}
-      <section className="py-20 bg-gradient-to-b from-blue-50 to-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Why SnapShades?</h2>
-              <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">We cut out the middleman so you get manufacturer-quality window treatments at the lowest possible price.</p>
-            </div>
-          </FadeIn>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Manufacturer Direct',
-                desc: 'We buy direct from Norman®, Levolor®, and Onyx — no retail markup, no showroom overhead. You save up to 60%.',
-                icon: '🏭',
-              },
-              {
-                title: 'AI-Powered Measuring',
-                desc: 'Just snap a photo of your tape measure. Our AI reads it instantly — no math, no guesswork, no expensive home visit.',
-                icon: '📱',
-              },
-              {
-                title: 'Custom Made for You',
-                desc: 'Every blind, shade, and shutter is made to your exact window dimensions. Not close — exact.',
-                icon: '✂️',
-              },
-            ].map((item, i) => (
-              <FadeIn key={item.title} delay={i * 0.1}>
-                <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 h-full">
-                  <div className="text-4xl mb-4">{item.icon}</div>
-                  <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-                  <p className="mt-3 text-gray-600 leading-relaxed">{item.desc}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof — single featured quote */}
-      <FadeIn>
-        <section className="py-16 bg-white border-t border-gray-100">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <div className="flex items-center justify-center gap-1 mb-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+                </Link>
               ))}
             </div>
-            <blockquote className="text-xl md:text-2xl text-gray-700 italic leading-relaxed">
-              "I couldn't believe how easy it was. Snapped photos of my windows, picked my blinds,
-              and they arrived perfectly sized. Saved hundreds compared to in-home consultation companies."
-            </blockquote>
-            <p className="mt-4 font-semibold text-gray-900">— Early Beta Customer</p>
-            <p className="text-sm text-gray-400 mt-1">More reviews coming soon as we launch</p>
           </div>
         </section>
-      </FadeIn>
 
-      {/* FAQ */}
-      <section id="faq" className="py-20 bg-blue-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Frequently Asked Questions</h2>
-              <p className="mt-4 text-gray-600">Everything you need to know about ordering custom window coverings online</p>
+        <section id="how-it-works" className="scroll-mt-20 border-y border-ink/10 bg-ink py-20 text-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-12 lg:grid-cols-[.75fr_1.25fr]">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#ef7a58]">How it works</p>
+                <h2 className="mt-3 text-4xl font-semibold tracking-[-0.04em]">Measure. Choose. Order.</h2>
+                <p className="mt-4 leading-7 text-white/60">One guided order path. No consultation, quote request, or sales call required.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {[
+                  { number: '01', icon: Ruler, title: 'Enter the size', copy: 'Choose inside or outside mount and enter width and height to the nearest 1/8 inch.' },
+                  { number: '02', icon: ShieldCheck, title: 'Choose details', copy: 'Select color, light control, and the few options that apply to that product.' },
+                  { number: '03', icon: PackageCheck, title: 'Review and order', copy: 'See supplier cost, our 10% fee, and your exact total before adding it to cart.' },
+                ].map((step) => (
+                  <div key={step.number} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                    <div className="flex items-center justify-between">
+                      <step.icon className="h-5 w-5 text-[#ef7a58]" />
+                      <span className="text-xs font-semibold text-white/35">{step.number}</span>
+                    </div>
+                    <h3 className="mt-8 text-lg font-semibold">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-white/55">{step.copy}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </FadeIn>
-          <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <motion.div key={i} layout className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full px-6 py-4 text-left flex items-center justify-between font-medium text-gray-900 hover:bg-gray-50 transition"
-                >
-                  <span className="pr-4">{faq.q}</span>
-                  <motion.div animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                    <ChevronDown className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                  </motion.div>
-                </button>
-                <AnimatePresence>
-                  {openFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    >
-                      <div className="px-6 pb-4 text-gray-600 leading-relaxed">{faq.a}</div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <FadeIn>
-        <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-700">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">Ready to Transform Your Windows?</h2>
-            <p className="mt-4 text-xl text-blue-100">Custom blinds, shades & shutters — direct from the manufacturer at the guaranteed lowest price.</p>
-            <MagneticButton
-              className="mt-8 bg-white text-blue-700 hover:bg-blue-50 rounded-full px-10 py-4 text-lg font-bold shadow-lg inline-flex items-center gap-2"
-              onClick={() => navigate("/start")}
-            >
-              Start Your Free Project <ArrowRight className="w-5 h-5" />
-            </MagneticButton>
-            <p className="mt-4 text-blue-200 text-sm">No credit card required to get started</p>
           </div>
         </section>
-      </FadeIn>
+
+        <section id="measure" className="scroll-mt-20 bg-sand py-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-clay">Measure once</p>
+              <h2 className="mt-3 text-4xl font-semibold tracking-[-0.04em]">Tell us how you want it mounted.</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-warm-gray-500">The order form gives you the right measurement instructions after you choose.</p>
+            </div>
+            <div className="mt-12 grid gap-5 md:grid-cols-2">
+              <div className="rounded-3xl border border-ink/10 bg-white p-7">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-clay/10 font-semibold text-clay">IN</div>
+                <h3 className="mt-6 text-2xl font-semibold">Inside mount</h3>
+                <p className="mt-3 leading-7 text-warm-gray-500">The product sits inside the window opening for the cleanest look.</p>
+                <div className="mt-6 rounded-2xl bg-sand p-4 text-sm leading-6">
+                  Measure the opening in three places. Enter the narrowest width and tallest height. <strong>Do not make a deduction.</strong>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-ink/10 bg-white p-7">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ink/5 font-semibold text-ink">OUT</div>
+                <h3 className="mt-6 text-2xl font-semibold">Outside mount</h3>
+                <p className="mt-3 leading-7 text-warm-gray-500">The product covers the opening and mounts to the trim or wall.</p>
+                <div className="mt-6 rounded-2xl bg-sand p-4 text-sm leading-6">
+                  Enter the exact finished width and height you want. Add overlap for privacy and light control. <strong>No deduction is made.</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white py-20">
+          <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[.7fr_1.3fr] lg:px-8">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-clay">Simple answers</p>
+              <h2 className="mt-3 text-4xl font-semibold tracking-[-0.04em]">Before you order</h2>
+            </div>
+            <div className="divide-y divide-ink/10 border-y border-ink/10">
+              {faqs.map((faq) => (
+                <details key={faq.question} className="group py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-semibold">
+                    {faq.question}
+                    <span className="text-xl font-light text-clay group-open:rotate-45">+</span>
+                  </summary>
+                  <p className="max-w-2xl pt-3 text-sm leading-6 text-warm-gray-500">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-clay px-4 py-16 text-center text-white">
+          <h2 className="text-4xl font-semibold tracking-[-0.04em]">Ready to measure?</h2>
+          <p className="mx-auto mt-3 max-w-xl text-white/75">Your exact price appears as soon as you enter a valid size.</p>
+          <Link to="/order" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-semibold text-ink">
+            Start your order <ArrowRight className="h-4 w-4" />
+          </Link>
+        </section>
+      </main>
 
       <Footer />
-
-      <script type="application/ld+json" dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          '@context': 'https://schema.org', '@type': 'FAQPage',
-          mainEntity: faqs.map((faq) => ({
-            '@type': 'Question', name: faq.q,
-            acceptedAnswer: { '@type': 'Answer', text: faq.a },
-          })),
-        }),
-      }} />
     </div>
-    </PageTransition>
   );
 }

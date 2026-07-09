@@ -1,12 +1,7 @@
 /**
- * Tax rate resolution.
- * Priority: territory_pricing (per-ZIP) → state default → fallback.
- * 
- * For client-side estimates before checkout, use getEstimatedTaxRate().
- * For actual order calculations, use getTaxRateForZip() which hits Supabase.
+ * SnapShades operates this storefront as a broker and does not add sales tax
+ * to the customer-facing order total.
  */
-
-import { supabase } from './supabase';
 
 // State-level defaults (simplified — matches zip-activation.ts)
 const STATE_TAX_RATES: Record<string, number> = {
@@ -27,25 +22,8 @@ const FALLBACK_RATE = 0.07;
  * Falls back to state rate, then fallback.
  */
 export async function getTaxRateForZip(zip: string): Promise<number> {
-  // Try territory_pricing first (most accurate)
-  const { data: pricing } = await supabase
-    .from('territory_pricing')
-    .select('tax_rate')
-    .eq('zip', zip)
-    .single();
-
-  if (pricing?.tax_rate) return Number(pricing.tax_rate);
-
-  // Fall back to state rate via zip_metadata
-  const { data: meta } = await supabase
-    .from('zip_metadata')
-    .select('state')
-    .eq('zip', zip)
-    .single();
-
-  if (meta?.state) return STATE_TAX_RATES[meta.state] ?? FALLBACK_RATE;
-
-  return FALLBACK_RATE;
+  void zip;
+  return 0;
 }
 
 /**
@@ -53,8 +31,8 @@ export async function getTaxRateForZip(zip: string): Promise<number> {
  * Uses state code if available, otherwise fallback.
  */
 export function getEstimatedTaxRate(stateCode?: string): number {
-  if (stateCode) return STATE_TAX_RATES[stateCode.toUpperCase()] ?? FALLBACK_RATE;
-  return FALLBACK_RATE;
+  void stateCode;
+  return 0;
 }
 
 export { STATE_TAX_RATES };

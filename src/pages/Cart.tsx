@@ -1,488 +1,125 @@
-import SnapShadesLogo from "@/components/SnapShadesLogo";
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Trash2, ArrowLeftRight, Plus, ShoppingCart, CreditCard, X, ChevronDown, ChevronUp, Clock, Truck, ArrowLeft, Wrench, Palette } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, CheckCircle2, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import SiteHeader from '@/components/layout/SiteHeader';
+import ProductVisual from '@/components/value/ProductVisual';
+import SEOHead from '@/components/SEOHead';
+import { VALUE_PRODUCTS } from '@/data/value-products';
 import { useCart } from '@/hooks/useCart';
-import InlineProductPicker from '@/components/InlineProductPicker';
-import ProductCategoryComparison from '@/components/ProductCategoryComparison';
-import CartBulkProductSwap from '@/components/cart/CartBulkProductSwap';
-import { ALL_PRODUCTS, PRODUCTS_BY_CATEGORY } from '@/data/catalog-index';
-import { PRODUCT_CATEGORIES, getProductSlugForBrand } from '@/data/product-categories';
-import { calculateShipping } from '@/lib/shipping';
-import { PRICE_MULTIPLIER } from '@/lib/constants';
-
-// ── Lift system and motorization options per product ──
-function getProductOptions(productId: string) {
-  const product = ALL_PRODUCTS.find(p => p.slug === productId);
-  if (!product) return { liftSystems: [], motorization: [], timeline: '4-6 weeks' };
-
-  const isShutter = product.category === 'shutters' || product.slug.includes('shutter');
-  const timeline = isShutter ? '6-8 weeks' : '4-6 weeks';
-
-  return {
-    liftSystems: product.liftSystems || [],
-    motorization: product.motorization?.available
-      ? (product.surcharges || []).filter(s => s.name.toLowerCase().includes('motor'))
-      : [],
-    timeline,
-  };
-}
-
-// ── Swatch selection storage ──
-interface SwatchSelection {
-  swatchId: string; swatchName: string; swatchCollection: string;
-  swatchImageUrl: string; swatchColor?: string; swatchOpacity?: string;
-}
-function loadSwatchSelections(): Record<string, SwatchSelection> {
-  try { return JSON.parse(localStorage.getItem('snapshades_swatches') || '{}'); }
-  catch { return {}; }
-}
 
 export default function Cart() {
   const navigate = useNavigate();
   const {
-    cart, rooms, loading,
-    removeWindow, updateWindow,
-    subtotal, tax, grandTotal, windowCount,
-    installTotal, designTotal, surchargesTotal,
+    cart,
+    loading,
+    removeWindow,
+    subtotal,
+    tax,
+    grandTotal,
+    windowCount,
   } = useCart();
-  const [promoCode, setPromoCode] = useState('');
-  const [editingWindowId, setEditingWindowId] = useState<string | null>(null);
-  const [editCategoryId, setEditCategoryId] = useState<string | null>(null);
-  const [expandedWindows, setExpandedWindows] = useState<Set<string>>(new Set());
-
-  const editingWindow = editingWindowId ? cart.find(w => w.id === editingWindowId) : null;
-
-  // Shipping is free to the customer on every order (brand promise: free
-  // shipping nationwide). We still compute the quote to surface the delivery
-  // estimate; the cost itself is absorbed, never added to the customer total.
-  const shippingItems = cart
-    .filter(w => w.productId && w.width)
-    .map(w => ({ productSlug: w.productId, width: w.width, height: w.height }));
-  const shippingQuote = calculateShipping(shippingItems);
-  const totalWithShipping = grandTotal;
-
-  const toggleExpand = (id: string) => {
-    setExpandedWindows(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="flex min-h-screen items-center justify-center bg-sand">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-clay" />
       </div>
     );
   }
 
   if (windowCount === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
-        <div className="max-w-sm mx-auto px-4 text-center">
-          <div className="text-7xl mb-6">🪟</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your windows are waiting</h2>
-          <p className="text-gray-500 mb-8">
-            Measure your windows in under 5 minutes using just your phone camera. We'll handle the rest.
-          </p>
-          <Button
-            onClick={() => navigate('/start')}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 py-5 font-semibold text-base"
-          >
-            Start Measuring — It's Free
-          </Button>
-          <p className="mt-4 text-xs text-gray-400">No account needed • Manufacturer-direct pricing</p>
-        </div>
+      <div className="min-h-screen bg-sand text-ink">
+        <SEOHead title="Your Cart" description="Your SnapShades cart." noindex />
+        <SiteHeader />
+        <main className="mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm">
+            <ShoppingBag className="h-8 w-8 text-clay" />
+          </div>
+          <h1 className="mt-7 text-3xl font-semibold tracking-tight">Your cart is empty.</h1>
+          <p className="mt-3 max-w-sm leading-7 text-warm-gray-500">Choose a product, enter your mount and measurements, and your exact price will appear.</p>
+          <Link to="/order" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-clay px-6 py-3.5 font-semibold text-white">
+            Start an order <ArrowRight className="h-4 w-4" />
+          </Link>
+        </main>
       </div>
     );
   }
 
+  const supplierCostTotal = cart.reduce((sum, item) => sum + item.ourCost, 0);
+  const brokerFeeTotal = Math.round((subtotal - supplierCostTotal) * 100) / 100;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <a href="/" className="flex items-center gap-2">
-            <SnapShadesLogo size={32} />
-            <span className="text-2xl font-bold text-blue-900">Snap<span className="text-blue-500">Shades</span></span>
-          </a>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <ShoppingCart className="w-5 h-5" />
-            <span className="font-semibold text-gray-900">{windowCount} item{windowCount !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-sand text-ink">
+      <SEOHead title="Your Cart" description="Review your custom SnapShades order." noindex />
+      <SiteHeader />
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <Link to="/order" className="inline-flex items-center gap-2 text-sm font-semibold text-warm-gray-500 hover:text-ink">
+          <ArrowLeft className="h-4 w-4" /> Add another window
+        </Link>
+        <h1 className="mt-5 text-4xl font-semibold tracking-[-0.04em]">Your cart</h1>
+        <p className="mt-2 text-warm-gray-500">Review each custom measurement before checkout.</p>
 
-      {/* Product Edit Modal — two-phase:
-          (1) ProductCategoryComparison — compare all 9 categories side-by-side
-          (2) InlineProductPicker — pick brand + variant within the chosen category */}
-      {editingWindow && (
-        <div
-          className="fixed inset-0 bg-ink/60 z-50 flex items-start justify-center overflow-y-auto p-4 pt-10"
-          onClick={() => { setEditingWindowId(null); setEditCategoryId(null); }}
-        >
-          <div
-            className="bg-card rounded-xl max-w-2xl w-full p-6 relative shadow-2xl border border-border"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="mt-9 grid items-start gap-7 lg:grid-cols-[1.35fr_.65fr]">
+          <section className="space-y-4" aria-label="Cart items">
+            {cart.map((item) => {
+              const valueProduct = VALUE_PRODUCTS.find((product) => product.catalogSlug === item.productId) ?? VALUE_PRODUCTS[0];
+              const colorName = item.productOptions?.color ?? valueProduct.colors[0].name;
+              const color = valueProduct.colors.find((option) => option.name === colorName)?.value;
+              return (
+                <article key={item.id} className="grid gap-5 rounded-3xl border border-ink/10 bg-white p-4 sm:grid-cols-[150px_1fr_auto] sm:p-5">
+                  <ProductVisual type={valueProduct.visual} color={color} className="aspect-[5/4] w-full rounded-2xl border-[6px] shadow-sm sm:aspect-square" />
+                  <div className="min-w-0 py-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-clay">{item.mountType ?? 'inside'} mount</p>
+                    <h2 className="mt-1 text-xl font-semibold">{item.product}</h2>
+                    <p className="mt-2 text-sm text-warm-gray-500">{item.width}&quot; wide × {item.height}&quot; high</p>
+                    <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                      {Object.entries(item.productOptions ?? {})
+                        .filter(([key]) => key !== 'controlSide' || valueProduct.id !== 'cellular')
+                        .map(([key, value]) => (
+                          <span key={key} className="rounded-full bg-sand px-2.5 py-1.5 text-warm-gray-500">{value}</span>
+                        ))}
+                    </div>
+                    <p className="mt-4 text-xs text-warm-gray-500">{item.room}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-t border-ink/10 pt-4 sm:flex-col sm:items-end sm:border-0 sm:pt-1">
+                    <p className="text-xl font-semibold">${item.customerPrice.toFixed(2)}</p>
+                    <button type="button" onClick={() => removeWindow(item.id)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-warm-gray-500 hover:text-red-600">
+                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+
+            <Link to="/order" className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-ink/20 bg-white/50 px-5 py-5 font-semibold text-ink hover:bg-white">
+              <Plus className="h-4 w-4" /> Add another window
+            </Link>
+          </section>
+
+          <aside className="rounded-3xl bg-ink p-6 text-white lg:sticky lg:top-24">
+            <h2 className="text-xl font-semibold">Order summary</h2>
+            <div className="mt-6 space-y-3 text-sm">
+              <div className="flex justify-between text-white/65"><span>Supplier cost</span><span>${supplierCostTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-white/65"><span>SnapShades 10%</span><span>${brokerFeeTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-white/65"><span>Shipping</span><span>$0.00</span></div>
+              <div className="flex justify-between text-white/65"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
+              <div className="flex justify-between border-t border-white/15 pt-4 text-xl font-semibold"><span>Total</span><span>${grandTotal.toFixed(2)}</span></div>
+            </div>
             <button
-              onClick={() => { setEditingWindowId(null); setEditCategoryId(null); }}
-              aria-label="Close"
-              className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-sand-deep text-warm-gray-500 hover:text-ink flex items-center justify-center"
+              type="button"
+              onClick={() => navigate('/checkout')}
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-clay px-5 py-3.5 font-semibold text-white hover:bg-[#c84222]"
             >
-              <X className="w-5 h-5" />
+              Continue to checkout <ArrowRight className="h-4 w-4" />
             </button>
-
-            <p className="text-xs font-medium uppercase tracking-wider text-warm-gray-500">
-              {editingWindow.room} / {editingWindow.name}
-            </p>
-
-            {!editCategoryId ? (
-              <div className="mt-2">
-                <ProductCategoryComparison
-                  width={editingWindow.width}
-                  height={editingWindow.height}
-                  depth={editingWindow.depth}
-                  onSelect={(categoryId) => setEditCategoryId(categoryId)}
-                  title="Change window covering"
-                />
-              </div>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setEditCategoryId(null)}
-                  className="mt-2 mb-3 text-xs text-warm-gray-500 hover:text-ink inline-flex items-center gap-1"
-                >
-                  <ArrowLeft className="w-3 h-3" />
-                  Compare all categories
-                </button>
-                <InlineProductPicker
-                  width={editingWindow.width}
-                  height={editingWindow.height}
-                  depth={editingWindow.depth}
-                  initialProduct={
-                    // Seed picker with the cheapest product in the chosen category
-                    (() => {
-                      const cat = PRODUCT_CATEGORIES.find((c) => c.id === editCategoryId);
-                      if (!cat) return editingWindow.productId;
-                      return getProductSlugForBrand(cat.id, 'norman')
-                        ?? getProductSlugForBrand(cat.id, 'levolor')
-                        ?? cat.brands[0]?.productSlug
-                        ?? editingWindow.productId;
-                    })()
-                  }
-                  onComplete={(selection) => {
-                    const price = (selection as unknown as Record<string, unknown>).price as number | undefined;
-                    const product = ALL_PRODUCTS.find((p) => p.slug === selection.productSlug);
-                    updateWindow(editingWindow.id, {
-                      product: selection.productName,
-                      productId: selection.productSlug,
-                      manufacturer: product?.brand ?? editingWindow.manufacturer,
-                      ...(price ? {
-                        customerPrice: price,
-                        retailPrice: Math.round((price / PRICE_MULTIPLIER) * 100) / 100,
-                        ourCost: Math.round((price / PRICE_MULTIPLIER) * 0.30 * 100) / 100,
-                      } : {}),
-                    });
-                    setEditingWindowId(null);
-                    setEditCategoryId(null);
-                  }}
-                />
-              </>
-            )}
-          </div>
+            <div className="mt-5 space-y-2 border-t border-white/10 pt-5 text-xs text-white/55">
+              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Custom made to your submitted size</p>
+              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Shipping included</p>
+              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> No added tax line</p>
+            </div>
+          </aside>
         </div>
-      )}
-
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-ink tracking-tight mb-6">Your Project</h1>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left: Cart Items */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Bulk product-type + manufacturer swap panel.
-                Updates product + customerPrice per window. Shipping is
-                excluded from these prices (recalculated in the summary). */}
-            <CartBulkProductSwap
-              cart={cart}
-              onApply={({ windowId, productId, productName, manufacturer, price }) => {
-                if (!windowId) return;
-                updateWindow(windowId, {
-                  product: productName,
-                  productId,
-                  manufacturer,
-                  customerPrice: price,
-                  retailPrice: Math.round((price / PRICE_MULTIPLIER) * 100) / 100,
-                  ourCost: Math.round((price / PRICE_MULTIPLIER) * 0.30 * 100) / 100,
-                });
-              }}
-            />
-            {Object.entries(rooms).map(([room, windows]) => (
-              <Card key={room}>
-                <CardContent className="p-5">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    🏠 {room}
-                    <span className="text-xs text-gray-400 font-normal">
-                      {windows.length} window{windows.length > 1 ? 's' : ''}
-                    </span>
-                  </h3>
-
-                  <div className="space-y-4">
-                    {windows.map(w => {
-                      const options = getProductOptions(w.productId);
-                      const isExpanded = expandedWindows.has(w.id);
-                      const swatches = loadSwatchSelections();
-                      const swatch = swatches[w.id];
-
-                      return (
-                        <div key={w.id} className="border border-gray-100 rounded-xl overflow-hidden">
-                          {/* Main row */}
-                          <div className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{w.name}</h4>
-                                <p className="text-sm text-gray-500 mt-0.5">
-                                  {w.width}" × {w.height}" × {w.depth}" deep
-                                </p>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {w.manufacturer} — {w.product}
-                                </p>
-                                {/* Manufacturing timeline */}
-                                <div className="flex items-center gap-1 mt-1.5">
-                                  <Clock className="w-3 h-3 text-amber-500" />
-                                  <span className="text-xs text-amber-600 font-medium">
-                                    Made to order ({options.timeline})
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-bold text-gray-900">${w.customerPrice.toFixed(2)}</div>
-                              </div>
-                            </div>
-
-                            {/* Swatch display */}
-                            {swatch && (
-                              <div className="mt-3 flex items-center gap-2 bg-gray-50 rounded-lg p-2">
-                                <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
-                                  {swatch.swatchImageUrl ? (
-                                    <img src={swatch.swatchImageUrl} alt={swatch.swatchName} className="w-full h-full object-cover" />
-                                  ) : swatch.swatchColor ? (
-                                    <div className="w-full h-full" style={{ backgroundColor: swatch.swatchColor }} />
-                                  ) : null}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-gray-800 truncate">{swatch.swatchName}</p>
-                                  <p className="text-xs text-gray-400 truncate">{swatch.swatchCollection}</p>
-                                </div>
-                                {swatch.swatchOpacity && (
-                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                                    swatch.swatchOpacity === 'sheer' ? 'bg-yellow-100 text-yellow-700' :
-                                    swatch.swatchOpacity === 'light-filtering' ? 'bg-blue-100 text-blue-700' :
-                                    swatch.swatchOpacity === 'room-darkening' ? 'bg-purple-100 text-purple-700' :
-                                    'bg-gray-800 text-white'
-                                  }`}>{swatch.swatchOpacity.replace('-', ' ')}</span>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Actions row */}
-                            <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
-                              <div className="flex gap-2 items-center flex-wrap">
-                                <button
-                                  onClick={() => { setEditingWindowId(w.id); setEditCategoryId(null); }}
-                                  className="inline-flex items-center gap-1.5 bg-clay hover:bg-clay-hover text-primary-foreground text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
-                                >
-                                  <ArrowLeftRight className="w-3.5 h-3.5" />
-                                  Change product
-                                </button>
-                                {(options.liftSystems.length > 0 || options.motorization.length > 0) && (
-                                  <button
-                                    onClick={() => toggleExpand(w.id)}
-                                    className="inline-flex items-center gap-1 text-xs text-warm-gray-500 hover:text-ink font-medium rounded-md px-2 py-1.5 border border-border hover:border-ink/30"
-                                  >
-                                    Options
-                                    {isExpanded
-                                      ? <ChevronUp className="w-3 h-3" />
-                                      : <ChevronDown className="w-3 h-3" />}
-                                  </button>
-                                )}
-                              </div>
-                              <button
-                                className="text-xs text-warm-gray-500 hover:text-destructive flex items-center gap-1"
-                                onClick={() => removeWindow(w.id)}
-                              >
-                                <Trash2 className="w-3 h-3" /> Remove
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Expandable configuration panel */}
-                          {isExpanded && (
-                            <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-4">
-                              {/* Lift System */}
-                              {options.liftSystems.length > 0 && (
-                                <div>
-                                  <label className="text-xs font-semibold text-gray-700 block mb-2">Lift System</label>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                      className="text-left px-3 py-2 rounded-lg text-xs border-2 border-blue-500 bg-blue-50 text-blue-700 font-medium"
-                                    >
-                                      Cordless (Standard)
-                                      <span className="block text-[10px] text-blue-500 mt-0.5">Included</span>
-                                    </button>
-                                    {options.liftSystems.filter(ls => !ls.toLowerCase().includes('cordless')).map(ls => (
-                                      <button
-                                        key={ls}
-                                        className="text-left px-3 py-2 rounded-lg text-xs border border-gray-200 bg-white text-gray-700 hover:border-blue-300 transition-colors"
-                                      >
-                                        {ls}
-                                        <span className="block text-[10px] text-gray-400 mt-0.5">+ surcharge</span>
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Motorization */}
-                              {options.motorization.length > 0 && (
-                                <div>
-                                  <label className="text-xs font-semibold text-gray-700 block mb-2">Motorization</label>
-                                  <div className="space-y-2">
-                                    <button className="w-full text-left px-3 py-2 rounded-lg text-xs border-2 border-blue-500 bg-blue-50 text-blue-700 font-medium">
-                                      Manual (Standard)
-                                      <span className="block text-[10px] text-blue-500 mt-0.5">Included</span>
-                                    </button>
-                                    {options.motorization.map(m => (
-                                      <button
-                                        key={m.name}
-                                        className="w-full text-left px-3 py-2 rounded-lg text-xs border border-gray-200 bg-white text-gray-700 hover:border-blue-300 transition-colors"
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <span>{m.name}</span>
-                                          <span className="font-semibold text-gray-900">+${m.price}</span>
-                                        </div>
-                                        {m.description && (
-                                          <span className="block text-[10px] text-gray-400 mt-0.5">{m.description}</span>
-                                        )}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              <p className="text-[10px] text-gray-400">
-                                Options will be applied at checkout. Final pricing includes all selected upgrades.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            <Button
-              variant="outline"
-              className="w-full rounded-xl py-6 gap-2 border-dashed border-2"
-              onClick={() => navigate('/start')}
-            >
-              <Plus className="w-5 h-5" /> Add More Windows
-            </Button>
-          </div>
-
-          {/* Right: Order Summary */}
-          <div>
-            <Card className="sticky top-24">
-              <CardContent className="p-6">
-                <h3 className="font-bold text-gray-900 mb-4">Order Summary</h3>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Products ({windowCount} windows)</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
-                  </div>
-                  {installTotal > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 flex items-center gap-1">
-                        <Wrench className="w-3.5 h-3.5" /> Professional Installation
-                      </span>
-                      <span className="font-medium">${installTotal.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {designTotal > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 flex items-center gap-1">
-                        <Palette className="w-3.5 h-3.5" /> Design Consultation
-                      </span>
-                      <span className="font-medium">${designTotal.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {surchargesTotal > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Add-ons & Upgrades</span>
-                      <span className="font-medium">${surchargesTotal.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 flex items-center gap-1">
-                      <Truck className="w-3.5 h-3.5" /> Shipping
-                    </span>
-                    <span className="font-medium text-green-600">FREE</span>
-                  </div>
-                  {shippingQuote.estimatedDays !== '—' && (
-                    <div className="text-xs text-gray-400 pl-5">
-                      Est. delivery: {shippingQuote.estimatedDays}
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Estimated Tax</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-3 mt-3">
-                    <div className="flex justify-between">
-                      <span className="font-bold text-gray-900">Total</span>
-                      <span className="text-xl font-bold text-gray-900">${(totalWithShipping).toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={e => setPromoCode(e.target.value)}
-                      placeholder="Promo code"
-                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:border-blue-400 outline-none"
-                    />
-                    <Button variant="outline" size="sm">Apply</Button>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full py-6 text-lg font-semibold gap-2"
-                  onClick={() => navigate('/checkout')}
-                >
-                  <CreditCard className="w-5 h-5" /> Checkout
-                </Button>
-
-                <div className="mt-3 space-y-1.5 text-center">
-                  <p className="text-xs text-gray-400">Secure checkout powered by Stripe</p>
-                  <p className="text-xs text-gray-400">Price Guarantee — lowest price, period</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

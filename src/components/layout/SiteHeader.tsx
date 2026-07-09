@@ -1,97 +1,89 @@
-import { Link, NavLink } from "react-router-dom";
-import { ShoppingBag, Menu, X } from "lucide-react";
-import { useState } from "react";
-import SnapShadesLogo from "@/components/SnapShadesLogo";
-import { Button } from "@/components/ui/button";
-
-/**
- * SiteHeader — shared sticky header for public pages.
- *
- * Consumed by Index, Products, ProductDetail, Swatches in Phase 4.
- * Phase 10 retrofits the remaining pages.
- */
+import { Link } from 'react-router-dom';
+import { Menu, ShoppingBag, X } from 'lucide-react';
+import { useState } from 'react';
+import SnapShadesLogo from '@/components/SnapShadesLogo';
+import { useCart } from '@/hooks/useCart';
 
 const NAV_LINKS = [
-  { to: "/products", label: "Shop" },
-  { to: "/swatches", label: "Swatches" },
-  { to: "/inspiration", label: "Rooms" },
-  { to: "/#how-it-works", label: "How It Works" },
-  { to: "/help", label: "Help" },
+  { to: '/#products', label: 'Products' },
+  { to: '/#how-it-works', label: 'How it works' },
+  { to: '/#measure', label: 'How to measure' },
 ];
 
 export default function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { windowCount } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 bg-background/85 backdrop-blur border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group" aria-label="SnapShades home">
-            <SnapShadesLogo size={32} />
+    <header className="sticky top-0 z-50 border-b border-ink/10 bg-sand/95 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5" aria-label="SnapShades home">
+            <SnapShadesLogo size={31} />
             <span className="text-xl font-semibold tracking-tight text-ink">
               Snap<span className="text-clay">Shades</span>
             </span>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-warm-gray-500">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-warm-gray-500 md:flex">
             {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  `hover:text-ink transition-colors ${isActive ? "text-ink" : ""}`
-                }
-              >
+              <a key={link.to} href={link.to} className="transition-colors hover:text-ink">
                 {link.label}
-              </NavLink>
+              </a>
             ))}
           </nav>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
-            <Button asChild size="sm" className="hidden sm:inline-flex bg-clay hover:bg-clay-hover text-primary-foreground rounded-md px-5 font-semibold">
-              <Link to="/swatches/order">Get Swatches</Link>
-            </Button>
+            <Link
+              to="/order"
+              className="hidden rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink/85 sm:inline-flex"
+            >
+              Start order
+            </Link>
             <Link
               to="/cart"
-              className="w-10 h-10 rounded-full hover:bg-sand-deep flex items-center justify-center text-ink"
-              aria-label="Cart"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand-deep"
+              aria-label={`Cart with ${windowCount} ${windowCount === 1 ? 'item' : 'items'}`}
             >
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingBag className="h-5 w-5" />
+              {windowCount > 0 && (
+                <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-clay px-1 text-[10px] font-bold text-white">
+                  {windowCount}
+                </span>
+              )}
             </Link>
             <button
-              onClick={() => setMobileOpen((v) => !v)}
-              className="md:hidden w-10 h-10 rounded-full hover:bg-sand-deep flex items-center justify-center text-ink"
-              aria-label="Menu"
+              type="button"
+              onClick={() => setMobileOpen((open) => !open)}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-sand-deep md:hidden"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
             >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile nav sheet */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-border py-4 space-y-1">
+          <nav className="space-y-1 border-t border-ink/10 py-4 md:hidden">
             {NAV_LINKS.map((link) => (
-              <Link
+              <a
                 key={link.to}
-                to={link.to}
+                href={link.to}
                 onClick={() => setMobileOpen(false)}
-                className="block px-2 py-2.5 rounded-md text-base font-medium text-ink hover:bg-sand-deep"
+                className="block rounded-lg px-3 py-3 font-medium text-ink hover:bg-sand-deep"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
             <Link
-              to="/swatches/order"
+              to="/order"
               onClick={() => setMobileOpen(false)}
-              className="block mx-2 mt-2 px-4 py-3 rounded-md bg-clay text-primary-foreground font-semibold text-center"
+              className="mt-3 block rounded-lg bg-ink px-4 py-3 text-center font-semibold text-white"
             >
-              Get Free Swatches
+              Start order
             </Link>
-          </div>
+          </nav>
         )}
       </div>
     </header>

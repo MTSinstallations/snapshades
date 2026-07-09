@@ -1,57 +1,77 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from '@/contexts/AuthContext';
 import QuickOrder from './QuickOrder';
 
-function renderPage() {
+function renderPage(initialEntry = '/order') {
   return render(
-    <MemoryRouter initialEntries={['/order']}>
-      <AuthProvider>
-        <QuickOrder />
-      </AuthProvider>
-    </MemoryRouter>,
+    <HelmetProvider>
+      <MemoryRouter initialEntries={[initialEntry]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <QuickOrder />
+        </AuthProvider>
+      </MemoryRouter>
+    </HelmetProvider>,
   );
 }
 
-describe('QuickOrder (1-2-3 express flow)', () => {
+function chooseCellularAndReachSize() {
+  fireEvent.click(screen.getByRole('button', { name: /Cellular Shades/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Continue to Mount/i }));
+  fireEvent.click(screen.getByRole('button', { name: /Continue to Size/i }));
+}
+
+describe('QuickOrder simplified value flow', () => {
   beforeEach(() => localStorage.clear());
 
-  it('renders the measure step with the product picker', async () => {
+  it('offers exactly the three approved product families', async () => {
     renderPage();
-    expect(await screen.findByText('What are you covering?')).toBeInTheDocument();
-    // The third step label is unique to the step indicator.
-    expect(screen.getByText('Pay')).toBeInTheDocument();
-    // Product cards render with a "from $" starting price.
-    expect(screen.getAllByText(/from \$\d/).length).toBeGreaterThan(0);
+    expect(await screen.findByRole('heading', { name: 'Choose your product.' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Cellular Shades/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Roller Shades/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Faux Wood Blinds/i })).toBeInTheDocument();
+    expect(screen.queryByText(/shutter/i)).not.toBeInTheDocument();
   });
 
-  it('reveals measurement inputs only after a product is chosen', async () => {
+  it('uses mount-specific measurement instructions and prices a valid size', async () => {
     renderPage();
-    await screen.findByText('What are you covering?');
-    expect(screen.queryByText('Your measurements')).not.toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Choose your product.' });
+    chooseCellularAndReachSize();
 
-    const productCard = screen
-      .getAllByRole('button')
-      .find((b) => /from \$\d/.test(b.textContent || ''));
-    expect(productCard).toBeTruthy();
-    fireEvent.click(productCard!);
+    expect(screen.getByText(/Do not deduct/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Width whole inches'), { target: { value: '36' } });
+    fireEvent.change(screen.getByLabelText('Height whole inches'), { target: { value: '48' } });
 
-    expect(screen.getByText('Your measurements')).toBeInTheDocument();
+    expect(screen.getByText('Your price: $59.40')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Continue to Details/i })).toBeEnabled();
   });
 
-  it('keeps the "Customize" advance button disabled until a valid size is entered', async () => {
+  it('stores the complete configured window with zero tax and shipping fees', async () => {
     renderPage();
-    await screen.findByText('What are you covering?');
-    const productCard = screen
-      .getAllByRole('button')
-      .find((b) => /from \$\d/.test(b.textContent || ''));
-    fireEvent.click(productCard!);
+    await screen.findByRole('heading', { name: 'Choose your product.' });
+    chooseCellularAndReachSize();
+    fireEvent.change(screen.getByLabelText('Width whole inches'), { target: { value: '36' } });
+    fireEvent.change(screen.getByLabelText('Height whole inches'), { target: { value: '48' } });
+    fireEvent.click(screen.getByRole('button', { name: /Continue to Details/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Continue to Review/i }));
 
-    // The footer advance button reads "Customize" on step 1; disabled with no size.
-    const advance = screen
-      .getAllByRole('button')
-      .find((b) => b.textContent?.trim().startsWith('Customize'));
-    expect(advance).toBeDefined();
-    expect(advance).toBeDisabled();
+    expect(screen.getByText('Supplier cost')).toBeInTheDocument();
+    expect(screen.getByText('SnapShades 10%')).toBeInTheDocument();
+    expect(screen.getAllByText('$0.00')).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: /Add to cart/i }));
+
+    const stored = JSON.parse(localStorage.getItem('snapshades_cart') || '[]');
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({
+      product: 'Cellular Shades',
+      mountType: 'inside',
+      width: 36,
+      height: 48,
+      customerPrice: 59.4,
+      ourCost: 54,
+      installFee: 0,
+      designFee: 0,
+    });
   });
 });

@@ -6,8 +6,8 @@
 
 import type { Product } from './norman-catalog';
 
-// Onyx width grid (24-96")
-const ONYX_WIDTHS = [24, 27, 30, 33, 36, 39, 42, 45, 48, 54, 60, 66, 72, 84, 96];
+// Onyx width grid (24-96"). Keep this aligned with every price row.
+const ONYX_WIDTHS = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96];
 
 // Onyx height grid (24-96")
 const ONYX_HEIGHTS = [24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96];
@@ -208,9 +208,9 @@ const onyxRoller: Product = {
       cellSize: 'N/A',
       construction: 'Roller',
       liftSystem: 'Chain Drive',
-      maxWidth: 116,
+      maxWidth: 96,
       maxHeight: 96,
-      restrictions: ['Max 116"W x 96"H'],
+      restrictions: ['Max 96"W x 96"H'],
       priceGrid: {
         widths: ONYX_WIDTHS,
         heights: ONYX_HEIGHTS,

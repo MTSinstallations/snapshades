@@ -5,6 +5,9 @@ import {
   saveCartToSupabase, loadCartFromSupabase,
   loadLocalCheckout, saveLocalCheckout, type SavedCheckout,
 } from '@/lib/persistent-cart';
+import { DEFAULT_TAX_RATE } from '@/lib/constants';
+
+export type MountType = 'inside' | 'outside';
 
 export interface CartWindow {
   id: string;
@@ -13,6 +16,8 @@ export interface CartWindow {
   width: number;
   height: number;
   depth: number;
+  mountType?: MountType;
+  productOptions?: Record<string, string>;
   product: string;
   productId: string;
   variantId: string;
@@ -126,7 +131,7 @@ export function useCart() {
   const installTotal = cart.reduce((sum, w) => sum + w.installFee, 0);
   const designTotal = cart.reduce((sum, w) => sum + w.designFee, 0);
   const surchargesTotal = cart.reduce((sum, w) => sum + w.surchargesTotal, 0);
-  const taxRate = 0.07;
+  const taxRate = DEFAULT_TAX_RATE;
   const tax = Math.round((subtotal + installTotal + designTotal + surchargesTotal) * taxRate * 100) / 100;
   const grandTotal = Math.round((subtotal + installTotal + designTotal + surchargesTotal + tax) * 100) / 100;
 
