@@ -1,10 +1,11 @@
 import { buildSupplierOrderCsv } from './supplier-order-export';
+import { NORMAN_DEALER_NUMBER } from './constants';
 
 describe('buildSupplierOrderCsv', () => {
   it('creates a supplier-review worksheet with exact order codes and escaped addresses', () => {
     const result = buildSupplierOrderCsv({
       orderNumber: 'SS-260709-0001',
-      dealerNumber: 'R00508',
+      dealerNumber: NORMAN_DEALER_NUMBER,
       customerName: 'Taylor Customer',
       customerEmail: 'taylor@example.com',
       customerPhone: '805-555-0100',
@@ -23,7 +24,7 @@ describe('buildSupplierOrderCsv', () => {
       }],
     });
 
-    expect(result).toContain('SS-260709-0001,R00508,1,Norman®');
+    expect(result).toContain(`SS-260709-0001,${NORMAN_DEALER_NUMBER},1,Norman®`);
     expect(result).toContain('P006,Tilting slats,Faux Wood,,,Cordless,,Smooth,Wand,PolyDeco valance-free,SmartPrivacy concealed,"2½""",Left,80.10');
     expect(result).toContain('"123 Main St, Ventura, CA, 93001"');
   });

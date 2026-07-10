@@ -11,6 +11,8 @@
  * AI agent — no human translation needed.
  */
 
+import { NORMAN_DEALER_NUMBER } from '@/lib/constants';
+
 // ============================================================
 // COMMON TYPES
 // ============================================================
@@ -1102,7 +1104,7 @@ export interface NormanOrderLine {
 
 export interface NormanOrderPayload {
   orderNumber: string;        // SnapShades order number
-  dealerNumber: string;       // Norman dealer number (R00508)
+  dealerNumber: string;       // Norman dealer number
   customerName: string;
   shippingAddress: {
     line1: string;
@@ -1178,7 +1180,7 @@ export function generateNormanOrderPayload(
 
   return {
     orderNumber,
-    dealerNumber: 'R00508',
+    dealerNumber: NORMAN_DEALER_NUMBER,
     customerName,
     shippingAddress,
     lines,
