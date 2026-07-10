@@ -8,7 +8,7 @@
 import { supabase } from './supabase';
 import type { CartWindow } from '@/hooks/useCart';
 import { VALUE_PRODUCTS } from '@/data/value-products';
-import { getStorefrontProduct, priceStorefrontItem } from '@/data/storefront-catalog';
+import { getStorefrontFixedOptions, getStorefrontProduct, priceStorefrontItem } from '@/data/storefront-catalog';
 
 const CART_KEY = 'snapshades_cart';
 const PROJECT_KEY = 'snapshades_project_id';
@@ -120,6 +120,7 @@ export function normalizeStorefrontCart(value: unknown): CartWindow[] {
         color: color.name,
         colorCode: color.code,
         lightControl,
+        ...getStorefrontFixedOptions(product.slug),
         ...(valueProduct.id === 'faux-wood' ? { controlSide: String(controlSide), slatSize } : {}),
         construction: variant.name,
       },

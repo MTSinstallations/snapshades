@@ -26,6 +26,10 @@ export default function Footer() {
             <Link to="/cart" className="hover:text-white">Cart</Link>
             <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-white">Email support</a>
             <Link to="/account" className="hover:text-white">My account</Link>
+            <Link to="/terms" className="hover:text-white">Terms</Link>
+            <Link to="/privacy" className="hover:text-white">Privacy</Link>
+            <Link to="/warranty" className="hover:text-white">Warranty</Link>
+            <Link to="/returns" className="hover:text-white">Returns</Link>
           </div>
         </div>
 

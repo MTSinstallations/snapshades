@@ -10,11 +10,8 @@ import { useCart } from '@/hooks/useCart';
 import { createOrder } from '@/lib/orders';
 import { createStorefrontCheckout } from '@/lib/payment-pipeline';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { CONTIGUOUS_US_STATES } from '@/lib/storefront-address';
 import { checkoutInfoSchema } from '@/lib/validation';
-
-const STATES = [
-  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY',
-];
 
 interface CheckoutForm {
   email: string;
@@ -227,11 +224,12 @@ export default function Checkout() {
 
             <fieldset className="mt-9 border-t border-ink/10 pt-8">
               <legend className="text-lg font-semibold">Shipping address</legend>
+              <p className="mt-2 text-sm leading-6 text-warm-gray-500">Current supplier freight covers physical addresses in the 48 contiguous United States.</p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <label className="sm:col-span-2 text-sm font-semibold">Street address<input value={form.address1} onChange={(e) => update('address1', e.target.value)} className={inputClass} autoComplete="address-line1" />{errors.address1 && <span className="mt-1 block text-xs text-red-600">{errors.address1}</span>}</label>
                 <label className="sm:col-span-2 text-sm font-semibold">Apartment, suite, etc. <span className="font-normal text-warm-gray-500">(optional)</span><input value={form.address2} onChange={(e) => update('address2', e.target.value)} className={inputClass} autoComplete="address-line2" /></label>
                 <label className="text-sm font-semibold">City<input value={form.city} onChange={(e) => update('city', e.target.value)} className={inputClass} autoComplete="address-level2" />{errors.city && <span className="mt-1 block text-xs text-red-600">{errors.city}</span>}</label>
-                <label className="text-sm font-semibold">State<select value={form.state} onChange={(e) => update('state', e.target.value)} className={inputClass} autoComplete="address-level1"><option value="">Select</option>{STATES.map((state) => <option key={state} value={state}>{state}</option>)}</select>{errors.state && <span className="mt-1 block text-xs text-red-600">{errors.state}</span>}</label>
+                <label className="text-sm font-semibold">State<select value={form.state} onChange={(e) => update('state', e.target.value)} className={inputClass} autoComplete="address-level1"><option value="">Select</option>{CONTIGUOUS_US_STATES.map((state) => <option key={state} value={state}>{state}</option>)}</select>{errors.state && <span className="mt-1 block text-xs text-red-600">{errors.state}</span>}</label>
                 <label className="text-sm font-semibold">ZIP code<input inputMode="numeric" value={form.zip} onChange={(e) => update('zip', e.target.value)} className={inputClass} autoComplete="postal-code" />{errors.zip && <span className="mt-1 block text-xs text-red-600">{errors.zip}</span>}</label>
               </div>
             </fieldset>
@@ -240,6 +238,7 @@ export default function Checkout() {
               <input type="checkbox" checked={confirmed} onChange={(e) => { setConfirmed(e.target.checked); setSubmitError(''); }} className="mt-1 h-4 w-4 accent-[#e04e2a]" />
               <span>I reviewed every product, mount type, width, and height. I understand these products are custom made to the measurements I submitted.</span>
             </label>
+            <p className="mt-4 text-xs leading-5 text-warm-gray-500">By continuing, you agree to the <Link to="/terms" className="font-semibold text-ink underline">terms of sale</Link> and acknowledge the <Link to="/privacy" className="font-semibold text-ink underline">privacy policy</Link>.</p>
 
             {submitError && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
 

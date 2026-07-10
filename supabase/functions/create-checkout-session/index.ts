@@ -1,9 +1,11 @@
 import Stripe from 'npm:stripe@^22';
 import {
   STOREFRONT_PRICING_VERSION,
+  getStorefrontFixedOptions,
   priceStorefrontItem,
 } from '../../../src/data/storefront-catalog.ts';
 import { calculateStorefrontFreight } from '../../../src/lib/pricing-rates.ts';
+import { isSupportedShippingState } from '../../../src/lib/storefront-address.ts';
 import {
   assertPublicPost,
   clientIp,
@@ -135,6 +137,7 @@ function validateContact(input: CheckoutRequest['contact']): CheckoutContact | n
     || !contact.address1
     || !contact.city
     || !STATE_PATTERN.test(contact.state)
+    || !isSupportedShippingState(contact.state)
     || !ZIP_PATTERN.test(contact.zip)) return null;
 
   return contact;
@@ -191,6 +194,7 @@ function validateAndPriceItems(items: CheckoutItemInput[] | undefined): PricedIt
         color,
         colorCode,
         lightControl,
+        ...getStorefrontFixedOptions(productId),
         ...(family === 'faux-wood' ? { controlSide, slatSize } : {}),
         construction: result.variant.name,
       },

@@ -3,10 +3,10 @@
 Hand this entire document to an AI assistant (Claude Code, Cursor, ChatGPT agent, etc.) or follow the steps yourself. The agent has ~15 minutes of work; you have ~5 minutes of clicking and copy-pasting.
 
 ## Context
-SnapShades is a Vite + React SPA that's already committed to GitHub at `https://github.com/MTSinstallations/snapshade-quick-view`. It needs to go live on Vercel with Cloudflare managing DNS for `snapshadesandshutters.com`. All Vercel config (`vercel.json`), SPA rewrites, security headers, and cache policies are already in the repo.
+SnapShades is a Vite + React SPA committed to GitHub at `https://github.com/MTSinstallations/snapshades`. It deploys on Vercel with Cloudflare managing DNS for `snapshadesandshutters.com`. All Vercel config (`vercel.json`), SPA rewrites, security headers, and cache policies are in the repo.
 
 ## What you'll have at the end
-- Live production URL (e.g. `snapshade-quick-view.vercel.app`)
+- Live production URL and custom domain
 - Custom domain routed through Cloudflare DNS
 - Automatic deploys on every `git push origin main`
 - Preview deploys on every feature branch
@@ -15,14 +15,14 @@ SnapShades is a Vite + React SPA that's already committed to GitHub at `https://
 - [ ] Vercel account (free tier) — [vercel.com/signup](https://vercel.com/signup) with Michael's GitHub login
 - [ ] Cloudflare account with the domain zone added
 - [ ] Supabase anon key — copy from [Supabase API settings](https://supabase.com/dashboard/project/ghqfpqthwgwogktlkfjp/settings/api) → `anon / public` (starts with `eyJ`). **Never use the `service_role` key.**
-- [ ] Stripe publishable key (optional for first launch) — `pk_test_...` from [Stripe API keys](https://dashboard.stripe.com/apikeys). Skip if not ready.
+- [ ] Server-side Stripe and webhook secrets installed in Supabase Edge Functions
 
 ---
 
 ## Step 1 — Import the repo into Vercel (UI, ~2 minutes)
 
 1. Go to **[vercel.com/new](https://vercel.com/new)**
-2. Under "Import Git Repository", select `MTSinstallations/snapshade-quick-view`
+2. Under "Import Git Repository", select `MTSinstallations/snapshades`
    - If it's not listed: click "Adjust GitHub App Permissions" → grant Vercel access to the repo → refresh
 3. Vercel should auto-detect Vite. Confirm these:
    - **Framework Preset:** Vite
@@ -33,13 +33,12 @@ SnapShades is a Vite + React SPA that's already committed to GitHub at `https://
 
 ## Step 2 — Set environment variables (UI, ~2 minutes)
 
-Add these three (or two if skipping Stripe). For each, select **Production, Preview, and Development** checkboxes.
+Add these browser-safe values. For each, select **Production, Preview, and Development** checkboxes.
 
 | Name | Value | Notes |
 |------|-------|-------|
 | `VITE_SUPABASE_URL` | `https://ghqfpqthwgwogktlkfjp.supabase.co` | Fixed, copy exactly |
 | `VITE_SUPABASE_ANON_KEY` | *(the anon key from prerequisites)* | Long JWT starting with `eyJ` |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | `pk_test_...` or skip | Required only to process payments |
 | `VITE_SITE_URL` | `https://snapshadesandshutters.com` | Canonical production URL |
 
 **Now click Deploy.** First build takes ~90 seconds.
@@ -48,10 +47,10 @@ Add these three (or two if skipping Stripe). For each, select **Production, Prev
 
 Vercel will land you on the project dashboard. Open the production URL.
 
-- [ ] Homepage hero renders: "Snap. Measure. Shade." with clay-orange accent
-- [ ] Nav link "Rooms" loads `/inspiration` without 404
-- [ ] DevTools → Network: no requests to `localhost`, Supabase calls return 200
-- [ ] `/swatches` renders the fabric gallery without errors
+- [ ] Homepage hero renders: "Custom window coverings. Without the markup."
+- [ ] `/order` offers exactly the three approved product families
+- [ ] `/privacy`, `/terms`, and `/warranty` render without 404s
+- [ ] DevTools Network has no requests to localhost and Supabase calls succeed
 
 If the site loads but data fetches fail, check **Settings → Environment Variables** — the most common mistake is forgetting to tick "Production" on the anon key.
 
@@ -86,8 +85,8 @@ Make any trivial change in the repo (e.g. bump a version in `package.json`), com
 **Images 404**
 → Expected. `public/images/` is mostly placeholder gradients until manufacturer photography is imported (see `docs/dealer-portal-tasks.md`).
 
-**Stripe features error**
-→ If `VITE_STRIPE_PUBLISHABLE_KEY` isn't set, checkout won't load. Either set it, or keep /checkout hidden for now.
+**Secure checkout is temporarily unavailable**
+→ Hosted Checkout is server-created. Verify `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, Stripe Tax setup, and the deployed Supabase checkout functions; no Stripe secret belongs in Vercel or browser code.
 
 **AI tape-measure feature says "AI not configured"**
 → That's the Supabase edge function, not Vercel. Set `ANTHROPIC_API_KEY` via `supabase secrets set ANTHROPIC_API_KEY=...` and deploy with `supabase functions deploy read-tape-measure`. Unrelated to this Vercel task.

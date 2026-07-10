@@ -1,9 +1,11 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Package, Truck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Download, Package, Printer, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
+import { NORMAN_DEALER_NUMBER } from '@/lib/constants';
+import { buildSupplierOrderCsv } from '@/lib/supplier-order-export';
 
 type FulfillmentStatus = 'ready_for_review' | 'submitted' | 'in_production' | 'shipped' | 'blocked' | 'cancelled';
 
@@ -117,6 +119,36 @@ export default function AdminOrderDetail() {
     setSaving(false);
   };
 
+  const downloadSupplierWorksheet = () => {
+    if (!order) return;
+    const csv = buildSupplierOrderCsv({
+      orderNumber: order.order_number,
+      dealerNumber: NORMAN_DEALER_NUMBER,
+      customerName: order.contact_name || '',
+      customerEmail: order.contact_email || '',
+      customerPhone: order.contact_phone || '',
+      shippingAddress: order.shipping_address || {},
+      items: order.order_items.map((item) => ({
+        lineNumber: item.line_number,
+        roomName: item.room_name || '',
+        productName: item.product_name,
+        supplierName: item.supplier_name,
+        supplierSku: item.supplier_sku,
+        mountType: item.mount_type,
+        width: Number(item.width),
+        height: Number(item.height),
+        options: item.product_options || {},
+        supplierCost: Number(item.supplier_cost),
+      })),
+    });
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${order.order_number}-supplier-worksheet.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-gray-50"><div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600" /></div>;
   if (!order) return <div className="min-h-screen bg-gray-50 p-8"><Link to="/admin" className="text-sm font-semibold text-blue-600">Back to admin</Link><p className="mt-6 text-red-600">{error}</p></div>;
 
@@ -127,18 +159,18 @@ export default function AdminOrderDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-      <header className="border-b bg-white"><div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6"><Link to="/admin" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600"><ArrowLeft className="h-4 w-4" /> Admin</Link><span className="font-mono text-sm font-semibold">{order.order_number}</span></div></header>
+      <header className="border-b bg-white print:hidden"><div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6"><Link to="/admin" className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600"><ArrowLeft className="h-4 w-4" /> Admin</Link><span className="font-mono text-sm font-semibold">{order.order_number}</span></div></header>
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><p className="text-sm font-semibold uppercase tracking-wider text-blue-600">Order</p><h1 className="mt-1 text-3xl font-bold">Fulfillment detail</h1><p className="mt-2 text-sm text-gray-500">Placed {new Date(order.created_at).toLocaleString()}</p></div>
-          <div className="flex gap-2"><span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">{order.payment_status}</span><span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{fulfillment?.status || 'not queued'}</span></div>
+          <div className="flex flex-wrap gap-2"><span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">{order.payment_status}</span><span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{fulfillment?.status || 'not queued'}</span><button type="button" onClick={downloadSupplierWorksheet} className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-semibold print:hidden"><Download className="h-3.5 w-3.5" /> Supplier worksheet</button><button type="button" onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-semibold print:hidden"><Printer className="h-3.5 w-3.5" /> Print</button></div>
         </div>
 
         {error && <div role="alert" className="mt-6 rounded-2xl bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 
         <div className="mt-7 grid items-start gap-6 lg:grid-cols-[1.35fr_.65fr]">
           <div className="space-y-6">
-            <Card><CardContent className="p-5"><h2 className="flex items-center gap-2 font-semibold"><Package className="h-4 w-4 text-blue-600" /> Exact order specifications</h2><div className="mt-4 space-y-4">{order.order_items.map((item) => <div key={item.id} className="rounded-2xl border p-4"><div className="flex flex-col justify-between gap-3 sm:flex-row"><div><p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Line {item.line_number} · {item.room_name || 'Room not named'}</p><h3 className="mt-1 text-lg font-bold">{item.product_name}</h3><p className="mt-1 text-sm text-gray-500">{item.width}&quot; W × {item.height}&quot; H · {item.mount_type} mount</p><div className="mt-3 flex flex-wrap gap-2">{Object.values(item.product_options || {}).map((value) => <span key={value} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">{value}</span>)}</div></div><div className="text-sm sm:text-right"><p className="font-mono text-xs text-gray-500">{item.supplier_name} · {item.supplier_sku}</p><p className="mt-2">Cost <strong>${Number(item.supplier_cost).toFixed(2)}</strong></p><p>10% <strong>${Number(item.broker_fee).toFixed(2)}</strong></p><p className="mt-1 text-lg font-bold">${Number(item.customer_price).toFixed(2)}</p></div></div></div>)}</div></CardContent></Card>
+            <Card><CardContent className="p-5"><h2 className="flex items-center gap-2 font-semibold"><Package className="h-4 w-4 text-blue-600" /> Exact order specifications</h2><p className="mt-1 text-xs text-gray-500">Norman dealer {NORMAN_DEALER_NUMBER} · review every line before supplier release</p><div className="mt-4 space-y-4">{order.order_items.map((item) => <div key={item.id} className="rounded-2xl border p-4"><div className="flex flex-col justify-between gap-3 sm:flex-row"><div><p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Line {item.line_number} · {item.room_name || 'Room not named'}</p><h3 className="mt-1 text-lg font-bold">{item.product_name}</h3><p className="mt-1 text-sm text-gray-500">{item.width}&quot; W × {item.height}&quot; H · {item.mount_type} mount</p><div className="mt-3 flex flex-wrap gap-2">{Object.values(item.product_options || {}).map((value) => <span key={value} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">{value}</span>)}</div></div><div className="text-sm sm:text-right"><p className="font-mono text-xs text-gray-500">{item.supplier_name} · {item.supplier_sku}</p><p className="mt-2">Cost <strong>${Number(item.supplier_cost).toFixed(2)}</strong></p><p>10% <strong>${Number(item.broker_fee).toFixed(2)}</strong></p><p className="mt-1 text-lg font-bold">${Number(item.customer_price).toFixed(2)}</p></div></div></div>)}</div></CardContent></Card>
             <Card><CardContent className="p-5"><h2 className="font-semibold">Customer and shipping</h2><div className="mt-4 grid gap-5 text-sm sm:grid-cols-2"><div><p className="font-semibold">{order.contact_name}</p><p className="mt-1 text-gray-500">{order.contact_email}<br />{order.contact_phone}</p></div><div><p className="font-semibold">Ship to</p><p className="mt-1 text-gray-500">{address.line1}{address.line2 ? `, ${address.line2}` : ''}<br />{address.city}, {address.state} {address.zip}</p></div></div></CardContent></Card>
           </div>
 

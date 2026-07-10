@@ -4,6 +4,7 @@ import {
   STOREFRONT_PRICING_VERSION,
   calculateConfiguredStorefrontPrice,
   calculateStorefrontPrice,
+  getStorefrontFixedOptions,
 } from './storefront-catalog';
 import { calculateStorefrontFreight } from '@/lib/pricing-rates';
 
@@ -84,5 +85,11 @@ describe('value product catalog', () => {
     expect(calculateStorefrontFreight([{ width: 36 }])).toBe(25);
     expect(calculateStorefrontFreight([{ width: 36 }, { width: 48 }])).toBe(36);
     expect(calculateStorefrontFreight([{ width: 96 }, { width: 48 }, { width: 90 }])).toBe(141);
+  });
+
+  it('snapshots the fixed supplier defaults hidden by the simplified UI', () => {
+    expect(getStorefrontFixedOptions('portrait-honeycomb-shades')).toMatchObject({ cellSize: '9/16" Single Cell', liftSystem: 'Cordless' });
+    expect(getStorefrontFixedOptions('soluna-roller-shades')).toMatchObject({ fabricGroup: 'Fabric Group 1', liftSystem: 'PrecisionLift Cordless', rollType: 'Standard roll' });
+    expect(getStorefrontFixedOptions('ultimate-faux-wood-blinds')).toMatchObject({ finish: 'Smooth', tiltType: 'Wand', headrail: 'PolyDeco valance-free', routeHoles: 'SmartPrivacy concealed' });
   });
 });

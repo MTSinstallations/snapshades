@@ -41,6 +41,9 @@ test('customer configures and orders a cellular shade through the simplified flo
   await page.getByLabel('Phone').fill('805-555-0100');
   await page.getByLabel('Street address').fill('123 Main Street');
   await page.getByLabel('City').fill('Ventura');
+  const shippingStates = await page.getByLabel('State').locator('option').allTextContents();
+  expect(shippingStates).not.toContain('AK');
+  expect(shippingStates).not.toContain('HI');
   await page.getByLabel('State').selectOption('CA');
   await page.getByLabel('ZIP code').fill('93001');
   await page.getByRole('checkbox').check();
@@ -70,4 +73,14 @@ test('faux wood flow captures supplier-ready slat and tilt details', async ({ pa
   await page.getByRole('button', { name: 'Left' }).click();
   await page.getByRole('button', { name: /Continue to Review/i }).click();
   await expect(page.getByText('2½" slats · Left tilt')).toBeVisible();
+});
+
+test('privacy, terms, and support routes are real storefront pages', async ({ page }) => {
+  await page.goto('/privacy');
+  await expect(page.getByRole('heading', { name: 'Privacy policy' })).toBeVisible();
+  await page.goto('/terms');
+  await expect(page.getByRole('heading', { name: 'Terms of sale' })).toBeVisible();
+  await page.goto('/warranty');
+  await expect(page.getByRole('heading', { name: 'Warranty and claims' })).toBeVisible();
+  await expect(page.getByText(/shipping and labor are not included/i)).toBeVisible();
 });

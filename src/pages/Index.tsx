@@ -73,7 +73,7 @@ export default function Index() {
                 </a>
               </div>
               <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-warm-gray-500">
-                {['Inside or outside mount', 'Freight at supplier cost', 'Tax calculated by Stripe'].map((item) => (
+                {['Inside or outside mount', '48-state freight at supplier cost', 'Tax calculated by Stripe'].map((item) => (
                   <span key={item} className="inline-flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-clay" /> {item}
                   </span>

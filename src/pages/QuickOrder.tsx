@@ -20,7 +20,7 @@ import {
   getValueProduct,
   type ValueProductId,
 } from '@/data/value-products';
-import { calculateConfiguredStorefrontPrice } from '@/data/storefront-catalog';
+import { calculateConfiguredStorefrontPrice, getStorefrontFixedOptions } from '@/data/storefront-catalog';
 import { useCart, type CartWindow, type MountType } from '@/hooks/useCart';
 import { loadLocalCart, saveLocalCart } from '@/lib/persistent-cart';
 
@@ -215,6 +215,7 @@ export default function QuickOrder() {
           colorCode: selectedColor?.code ?? '',
           lightControl,
           construction: variant.name,
+          ...getStorefrontFixedOptions(catalogProduct.slug),
           ...(product.id === 'faux-wood' ? { controlSide, slatSize } : {}),
         },
         product: product.name,

@@ -25,7 +25,6 @@ Keep Cloudflare DNS records gray-clouded for launch. Vercel recommends avoiding 
 ```bash
 VITE_SUPABASE_URL=https://ghqfpqthwgwogktlkfjp.supabase.co
 VITE_SUPABASE_ANON_KEY=<supabase anon public key>
-VITE_STRIPE_PUBLISHABLE_KEY=<stripe publishable key>
 VITE_SITE_URL=https://snapshadesandshutters.com
 ```
 

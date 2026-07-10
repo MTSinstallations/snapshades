@@ -11,6 +11,29 @@ export const STOREFRONT_PRICING_VERSION = 'norman-2026-03-value-v2';
 export const STOREFRONT_DEALER_COST_RATE = DEALER_COST_RATE;
 export const STOREFRONT_BROKER_MARKUP_RATE = BROKER_MARKUP_RATE;
 
+export const STOREFRONT_FIXED_OPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'portrait-honeycomb-shades': {
+    cellSize: '9/16" Single Cell',
+    liftSystem: 'Cordless',
+  },
+  'soluna-roller-shades': {
+    fabricGroup: 'Fabric Group 1',
+    liftSystem: 'PrecisionLift Cordless',
+    rollType: 'Standard roll',
+  },
+  'ultimate-faux-wood-blinds': {
+    finish: 'Smooth',
+    liftSystem: 'Cordless',
+    tiltType: 'Wand',
+    headrail: 'PolyDeco valance-free',
+    routeHoles: 'SmartPrivacy concealed',
+  },
+};
+
+export function getStorefrontFixedOptions(productSlug: string): Record<string, string> {
+  return { ...(STOREFRONT_FIXED_OPTIONS[productSlug] || {}) };
+}
+
 export interface StorefrontPriceGrid {
   widths: readonly number[];
   heights: readonly number[];

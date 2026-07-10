@@ -13,7 +13,7 @@ Follow these steps in order. Each step is independently testable. Total time: ~4
 ## Prerequisites (check before starting)
 
 - [x] Supabase project exists (`ghqfpqthwgwogktlkfjp`)
-- [x] Repo on GitHub (`MTSinstallations/snapshade-quick-view`)
+- [x] Repo on GitHub (`MTSinstallations/snapshades`)
 - [ ] Supabase CLI installed locally (`brew install supabase/tap/supabase`)
 - [ ] Vercel account (free tier is plenty) — [vercel.com/signup](https://vercel.com/signup)
 - [ ] Cloudflare account with `snapshadesandshutters.com` added as a zone
@@ -77,7 +77,7 @@ If this says "fast-forward" or "up to date," you're good.
 
 1. Go to [vercel.com/new](https://vercel.com/new)
 2. Click **Import Git Repository** → authorize GitHub if prompted
-3. Select `MTSinstallations/snapshade-quick-view`
+3. Select `MTSinstallations/snapshades`
 4. Vercel auto-detects Vite — you should see:
    - **Framework Preset:** Vite
    - **Build Command:** `npm run build`
@@ -90,7 +90,6 @@ If this says "fast-forward" or "up to date," you're good.
 |------------------------------|--------------------------------------------------------|--------------------------|
 | `VITE_SUPABASE_URL`          | `https://ghqfpqthwgwogktlkfjp.supabase.co`             | Already in `.env`        |
 | `VITE_SUPABASE_ANON_KEY`     | `<paste from Step 2>`                                  | From Supabase dashboard  |
-| `VITE_STRIPE_PUBLISHABLE_KEY`| `pk_live_...` or `pk_test_...` (start with test)       | From Stripe dashboard    |
 | `VITE_SITE_URL`              | `https://snapshadesandshutters.com`                    | Public canonical URL     |
 
 Leave the Production / Preview / Development checkboxes all on.
@@ -101,9 +100,9 @@ Leave the Production / Preview / Development checkboxes all on.
 
 Visit the URL Vercel gives you (`<project>.vercel.app`). You should see:
 
-- Homepage hero: **"Snap. Measure. Shade."** with clay-orange accent
-- Clicking **Rooms** in the nav loads `/inspiration`
-- `Get Free Swatches` loads `/swatches/order`
+- Homepage hero: **"Custom window coverings. Without the markup."**
+- `/order` shows exactly Cellular Shades, Roller Shades, and Faux Wood Blinds
+- `/privacy`, `/terms`, and `/warranty` render without a 404
 - DevTools Network tab: no requests to `localhost`, no CORS errors, Supabase calls return 200
 
 If any of those fail, check **Vercel Dashboard → Deployments → Logs** for the failing build.
@@ -150,7 +149,7 @@ See `docs/agent-instructions-stripe-setup.md` for the Stripe side. AI features a
 3. Create a webhook endpoint for `https://ghqfpqthwgwogktlkfjp.supabase.co/functions/v1/stripe-webhook` and subscribe to checkout session completion/expiry, PaymentIntent success/failure, and charge refund events.
 4. Store that endpoint's signing secret as `STRIPE_WEBHOOK_SECRET`.
 
-The application passes Norman freight through without markup ($25 first standard unit, $11 each additional; $80 first 90-inch-or-wider unit and $50 each additional oversized unit). Stripe adds applicable destination tax during hosted payment, and the paid order stores the exact tax and final total returned by Stripe.
+The application passes Norman freight through without markup for physical addresses in the 48 contiguous United States ($25 first standard unit, $11 each additional; $80 first 90-inch-or-wider unit and $50 each additional oversized unit). Alaska and Hawaii remain disabled until their separate supplier freight schedule is confirmed. Stripe adds applicable destination tax during hosted payment, and the paid order stores the exact tax and final total returned by Stripe.
 
 ---
 
@@ -193,7 +192,7 @@ git push
 ```
 
 Branches that aren't `main` get **preview deploys** — shareable URLs like
-`snapshade-quick-view-git-mybranch.vercel.app`. Click through Vercel's
+the Vercel preview URL for that branch. Click through Vercel's
 comment on the PR to preview before merging.
 
 ---

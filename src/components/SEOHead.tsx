@@ -17,7 +17,7 @@ interface SEOHeadProps {
   noindex?: boolean;
 }
 
-import { SITE_URL, SITE_NAME } from '@/lib/constants';
+import { SITE_URL, SITE_NAME, SUPPORT_EMAIL } from '@/lib/constants';
 
 export default function SEOHead({
   title,
@@ -78,7 +78,7 @@ export function getOrganizationSchema() {
     description: 'Custom cellular shades, roller shades, and faux wood blinds at supplier cost plus 10%, plus pass-through freight and applicable tax.',
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+1-888-555-0123',
+      email: SUPPORT_EMAIL,
       contactType: 'customer service',
       availableLanguage: 'English',
     },
@@ -117,7 +117,6 @@ export function getLocalBusinessSchema(city: string, state: string, installerCou
     description: `Custom window coverings in ${city}, ${state}. Pass-through supplier freight, ${installerCount} certified installers, dealer-direct pricing.`,
     address: { '@type': 'PostalAddress', addressLocality: city, addressRegion: state, addressCountry: 'US' },
     url: SITE_URL,
-    telephone: '+1-888-555-0123',
     priceRange: '$$',
     areaServed: { '@type': 'City', name: city },
   };

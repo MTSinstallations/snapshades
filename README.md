@@ -18,14 +18,13 @@ npm run test:e2e
 - DNS/domain management: Cloudflare
 - Backend: Supabase PostgreSQL, Auth, Storage, and Edge Functions
 - Payments: Stripe Checkout, Payment Intents, and Connect
-- Storefront pricing: Norman supplier cost + 10%, pass-through supplier freight, Stripe destination tax
+- Storefront pricing: Norman supplier cost + 10%, pass-through supplier freight in the 48 contiguous states, Stripe destination tax
 
 Set browser-safe values in Vercel:
 
 ```bash
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
-VITE_STRIPE_PUBLISHABLE_KEY
 VITE_SITE_URL
 ```
 

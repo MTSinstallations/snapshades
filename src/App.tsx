@@ -25,6 +25,7 @@ const AdminContractors = lazy(() => import('@/pages/AdminContractors'));
 const AdminZipActivation = lazy(() => import('@/pages/AdminZipActivation'));
 const AdminOrderDetail = lazy(() => import('@/pages/AdminOrderDetail'));
 const CustomerService = lazy(() => import('@/pages/CustomerService'));
+const Legal = lazy(() => import('@/pages/Legal'));
 
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center bg-sand">
@@ -96,6 +97,8 @@ const App = () => (
                   <Route path="/warranty" element={<CustomerService />} />
                   <Route path="/claims" element={<CustomerService />} />
                   <Route path="/returns" element={<CustomerService />} />
+                  <Route path="/privacy" element={<Legal />} />
+                  <Route path="/terms" element={<Legal />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
