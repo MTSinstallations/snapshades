@@ -13,7 +13,7 @@ export default function Cart() {
     loading,
     removeWindow,
     subtotal,
-    tax,
+    shippingTotal,
     grandTotal,
     windowCount,
   } = useCart();
@@ -101,9 +101,9 @@ export default function Cart() {
             <div className="mt-6 space-y-3 text-sm">
               <div className="flex justify-between text-white/65"><span>Supplier cost</span><span>${supplierCostTotal.toFixed(2)}</span></div>
               <div className="flex justify-between text-white/65"><span>SnapShades 10%</span><span>${brokerFeeTotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-white/65"><span>Shipping</span><span>$0.00</span></div>
-              <div className="flex justify-between text-white/65"><span>Tax</span><span>${tax.toFixed(2)}</span></div>
-              <div className="flex justify-between border-t border-white/15 pt-4 text-xl font-semibold"><span>Total</span><span>${grandTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-white/65"><span>Supplier freight</span><span>${shippingTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-white/65"><span>Tax</span><span>Calculated at payment</span></div>
+              <div className="flex justify-between border-t border-white/15 pt-4 text-xl font-semibold"><span>Before tax</span><span>${grandTotal.toFixed(2)}</span></div>
             </div>
             <button
               type="button"
@@ -114,8 +114,8 @@ export default function Cart() {
             </button>
             <div className="mt-5 space-y-2 border-t border-white/10 pt-5 text-xs text-white/55">
               <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Custom made to your submitted size</p>
-              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Shipping included</p>
-              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> No added tax line</p>
+              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Supplier freight passed through at cost</p>
+              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Applicable tax calculated by Stripe</p>
             </div>
           </aside>
         </div>

@@ -2,11 +2,10 @@
  * Payment Pipeline — Full autonomous payment processing
  * 
  * CUSTOMER PAYMENT FLOW:
- * 1. Customer clicks "Place Order" → createCheckoutSession()
+ * 1. Customer clicks "Continue to payment" → createStorefrontCheckout()
  * 2. Redirect to Stripe Checkout (hosted page)
- * 3. Payment succeeds → Stripe webhook fires → handlePaymentSuccess()
- * 4. Order status: pending → confirmed → triggers order lifecycle
- * 5. Payment fails → handlePaymentFailure() → auto-email customer
+ * 3. Signed Stripe webhook verifies the paid amount and confirms the order
+ * 4. Database trigger creates a fulfillment job exactly once
  * 
  * CONTRACTOR PAYOUT FLOW:
  * 1. Job marked complete → payout queued
@@ -23,19 +22,95 @@
  */
 
 import { supabase } from './supabase';
-import { SITE_URL } from './constants';
-import { advanceOrder } from './order-lifecycle';
-import { sendEmail, customerEmails, contractorEmails } from './email-templates';
+import { sendEmail, contractorEmails } from './email-templates';
 
 // ============================================================
 // TYPES
 // ============================================================
 
-export interface CheckoutSession {
+export interface StorefrontCheckoutItem {
+  id: string;
+  room: string;
+  name: string;
+  productId: string;
+  variantId: string;
+  width: number;
+  height: number;
+  mountType: 'inside' | 'outside';
+  productOptions: Record<string, string>;
+}
+
+export interface StorefrontCheckoutRequest {
+  checkoutToken: string;
+  contact: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  items: StorefrontCheckoutItem[];
+}
+
+export interface StorefrontCheckoutResult {
   sessionId: string;
   checkoutUrl: string;
   orderId: string;
+  orderNumber: string;
+  code?: string;
   error: string | null;
+}
+
+async function functionErrorMessage(error: unknown, fallback: string): Promise<{ message: string; code?: string }> {
+  const context = error && typeof error === 'object' && 'context' in error
+    ? (error as { context?: unknown }).context
+    : null;
+  if (context instanceof Response) {
+    try {
+      const body = await context.clone().json() as { error?: string; code?: string };
+      return { message: body.error || fallback, code: body.code };
+    } catch {
+      // The function returned a non-JSON error; use the customer-safe fallback.
+    }
+  }
+  return { message: fallback };
+}
+
+/**
+ * Create the order and Stripe session in one server-authoritative operation.
+ * The Edge Function ignores all browser price fields and prices each item from
+ * the shared supplier grid before it writes the order or calls Stripe.
+ */
+export async function createStorefrontCheckout(
+  input: StorefrontCheckoutRequest,
+): Promise<StorefrontCheckoutResult> {
+  const empty: StorefrontCheckoutResult = {
+    sessionId: '', checkoutUrl: '', orderId: '', orderNumber: '', error: null,
+  };
+
+  try {
+    const { data, error } = await supabase.functions.invoke('create-checkout-session', { body: input });
+    if (error) {
+      const parsed = await functionErrorMessage(error, 'Secure checkout could not be opened. Please try again.');
+      return { ...empty, error: parsed.message, code: parsed.code };
+    }
+    if (!data?.checkoutUrl || !data?.sessionId || !data?.orderId || !data?.orderNumber) {
+      return { ...empty, error: data?.error || 'Secure checkout returned an incomplete response.' };
+    }
+    return {
+      sessionId: data.sessionId,
+      checkoutUrl: data.checkoutUrl,
+      orderId: data.orderId,
+      orderNumber: data.orderNumber,
+      error: null,
+    };
+  } catch (error: unknown) {
+    return { ...empty, error: error instanceof Error ? error.message : 'Secure checkout could not be opened.' };
+  }
 }
 
 export interface PaymentEvent {
@@ -56,177 +131,6 @@ export interface PayoutSummary {
   bookingIds: string[];
   status: 'calculated' | 'processing' | 'sent' | 'failed';
   error?: string;
-}
-
-// ============================================================
-// CUSTOMER CHECKOUT
-// ============================================================
-
-/**
- * Create a Stripe Checkout session for an order.
- * Called when customer clicks "Place Order".
- * Returns a URL to redirect them to Stripe's hosted checkout.
- */
-export async function createCheckoutSession(
-  orderId: string,
-  orderNumber: string,
-  customerEmail: string,
-  lineItems: { name: string; amount: number; quantity: number }[],
-  successUrl: string,
-  cancelUrl: string,
-): Promise<CheckoutSession> {
-  try {
-    // Call Supabase edge function to create Stripe session (keeps secret key server-side)
-    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      body: {
-        orderId,
-        orderNumber,
-        customerEmail,
-        lineItems: lineItems.map(item => ({
-          price_data: {
-            currency: 'usd',
-            product_data: { name: item.name },
-            unit_amount: Math.round(item.amount * 100), // cents
-          },
-          quantity: item.quantity,
-        })),
-        successUrl,
-        cancelUrl,
-        metadata: { order_id: orderId, order_number: orderNumber },
-      },
-    });
-
-    if (error) throw error;
-
-    // Store checkout session ID on order
-    await supabase.from('orders').update({
-      stripe_checkout_session_id: data.sessionId,
-      payment_status: 'processing',
-    }).eq('id', orderId);
-
-    return {
-      sessionId: data.sessionId,
-      checkoutUrl: data.url,
-      orderId,
-      error: null,
-    };
-  } catch (err: unknown) {
-    return {
-      sessionId: '',
-      checkoutUrl: '',
-      orderId,
-      error: err instanceof Error ? err.message : 'Failed to create checkout session',
-    };
-  }
-}
-
-/**
- * Create a Payment Intent for inline card payments (Stripe Elements).
- * Alternative to Checkout Session for embedded payment forms.
- */
-export async function createPaymentIntent(
-  orderId: string,
-  amount: number,
-  customerEmail: string,
-): Promise<{ clientSecret: string; error: string | null }> {
-  try {
-    const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-      body: {
-        orderId,
-        amount: Math.round(amount * 100), // cents
-        customerEmail,
-        metadata: { order_id: orderId },
-      },
-    });
-
-    if (error) throw error;
-
-    await supabase.from('orders').update({
-      stripe_payment_intent_id: data.paymentIntentId,
-      payment_status: 'processing',
-    }).eq('id', orderId);
-
-    return { clientSecret: data.clientSecret, error: null };
-  } catch (err: unknown) {
-    return { clientSecret: '', error: err instanceof Error ? err.message : 'Failed to create payment intent' };
-  }
-}
-
-// ============================================================
-// WEBHOOK HANDLERS (called by edge function on Stripe webhook)
-// ============================================================
-
-/**
- * Handle successful payment (Stripe webhook: checkout.session.completed or payment_intent.succeeded)
- */
-export async function handlePaymentSuccess(
-  orderId: string,
-  stripePaymentId: string,
-  amount: number,
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    // Update order payment status
-    await supabase.from('orders').update({
-      payment_status: 'paid',
-      stripe_payment_intent_id: stripePaymentId,
-    }).eq('id', orderId);
-
-    // Advance order to confirmed (triggers confirmation email + Norman submission queue)
-    await advanceOrder(orderId, 'confirmed');
-
-    // Log payment event
-    await logPaymentEvent({
-      type: 'payment_success',
-      orderId,
-      amount: amount / 100, // convert from cents
-      stripeId: stripePaymentId,
-      metadata: {},
-    });
-
-    return { success: true };
-  } catch (err: unknown) {
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
-  }
-}
-
-/**
- * Handle failed payment
- */
-export async function handlePaymentFailure(
-  orderId: string,
-  stripePaymentId: string,
-  failureReason: string,
-): Promise<void> {
-  await supabase.from('orders').update({ payment_status: 'failed' }).eq('id', orderId);
-
-  // Get customer email
-  const { data: order } = await supabase
-    .from('orders')
-    .select('order_number, grand_total, customers(email, full_name)')
-    .eq('id', orderId)
-    .single();
-
-  if (order) {
-    const customer = order.customers as unknown as Record<string, string> | null;
-    if (customer?.email) {
-      const email = customerEmails.paymentFailed({
-        name: customer.full_name || 'Customer',
-        orderNumber: order.order_number,
-        amount: Number(order.grand_total).toFixed(2),
-        retryUrl: `${SITE_URL}/checkout?retry=${orderId}`,
-      });
-      email.to = customer.email;
-      await sendEmail(email);
-    }
-  }
-
-  await logPaymentEvent({
-    type: 'payment_failure',
-    orderId,
-    amount: 0,
-    stripeId: stripePaymentId,
-    metadata: { reason: failureReason },
-  });
 }
 
 // ============================================================

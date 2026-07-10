@@ -7,6 +7,8 @@
 
 import { supabase } from './supabase';
 import type { CartWindow } from '@/hooks/useCart';
+import { VALUE_PRODUCTS } from '@/data/value-products';
+import { getStorefrontProduct, priceStorefrontItem } from '@/data/storefront-catalog';
 
 const CART_KEY = 'snapshades_cart';
 const PROJECT_KEY = 'snapshades_project_id';
@@ -31,7 +33,10 @@ export interface SavedCheckout {
 
 export function loadLocalCart(): CartWindow[] {
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    const parsed = JSON.parse(localStorage.getItem(CART_KEY) || '[]') as unknown;
+    const normalized = normalizeStorefrontCart(parsed);
+    localStorage.setItem(CART_KEY, JSON.stringify(normalized));
+    return normalized;
   } catch { return []; }
 }
 
@@ -54,6 +59,83 @@ export function clearLocalCart() {
   localStorage.removeItem(CART_KEY);
   localStorage.removeItem(PROJECT_KEY);
   localStorage.removeItem(CHECKOUT_KEY);
+}
+
+/**
+ * Drops retired product lines and recomputes every displayed price from the
+ * current supplier grid. The server still performs the final authoritative
+ * calculation, but stale or edited browser carts never show misleading totals.
+ */
+export function normalizeStorefrontCart(value: unknown): CartWindow[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((candidate): CartWindow[] => {
+    if (!candidate || typeof candidate !== 'object') return [];
+    const item = candidate as Partial<CartWindow>;
+    const product = typeof item.productId === 'string' ? getStorefrontProduct(item.productId) : null;
+    const valueProduct = VALUE_PRODUCTS.find((entry) => entry.catalogSlug === item.productId);
+    const variant = product?.variants.find((entry) => entry.id === item.variantId);
+    const options = item.productOptions && typeof item.productOptions === 'object' ? item.productOptions : {};
+    const lightControl = typeof options.lightControl === 'string' ? options.lightControl : '';
+    const colorName = typeof options.color === 'string' ? options.color : '';
+    const colorCode = typeof options.colorCode === 'string' ? options.colorCode : '';
+    const color = valueProduct?.colors.find((entry) => (
+      entry.name === colorName
+      && entry.code === colorCode
+      && (!entry.lightControl || entry.lightControl === lightControl)
+    ));
+    const width = Number(item.width);
+    const height = Number(item.height);
+    const priced = product && variant
+      ? priceStorefrontItem({
+          productSlug: product.slug,
+          variantId: variant.id,
+          width,
+          height,
+          lightControl,
+        })
+      : null;
+
+    if (!product || !valueProduct || !variant || !priced || !color
+      || !valueProduct.lightControls.includes(lightControl)
+      || !Number.isFinite(width) || !Number.isFinite(height)
+      || Math.abs(width * 8 - Math.round(width * 8)) > 0.00001
+      || Math.abs(height * 8 - Math.round(height * 8)) > 0.00001
+      || (item.mountType !== 'inside' && item.mountType !== 'outside')
+      || typeof item.id !== 'string' || !item.id) return [];
+
+    const controlSide = options.controlSide;
+    const slatSize = options.slatSize === '2½"' ? '2½"' : '2"';
+    if (valueProduct.id === 'faux-wood' && controlSide !== 'Left' && controlSide !== 'Right') return [];
+
+    return [{
+      id: item.id,
+      room: typeof item.room === 'string' && item.room.trim() ? item.room.slice(0, 100) : 'My windows',
+      name: typeof item.name === 'string' && item.name.trim() ? item.name.slice(0, 100) : valueProduct.name,
+      width,
+      height,
+      depth: 0,
+      mountType: item.mountType,
+      productOptions: {
+        color: color.name,
+        colorCode: color.code,
+        lightControl,
+        ...(valueProduct.id === 'faux-wood' ? { controlSide: String(controlSide), slatSize } : {}),
+        construction: variant.name,
+      },
+      product: valueProduct.name,
+      productId: product.slug,
+      variantId: variant.id,
+      manufacturer: product.brand,
+      retailPrice: priced.price.retailPrice,
+      ourCost: priced.price.supplierCost,
+      customerPrice: priced.price.price,
+      tier: 'ship',
+      installFee: 0,
+      designFee: 0,
+      surchargesTotal: 0,
+    }];
+  });
 }
 
 // ── Supabase Sync ──
@@ -141,7 +223,7 @@ export async function loadCartFromSupabase(userId: string): Promise<{ cart: Cart
 
   if (!windows || windows.length === 0) return { cart: [], projectId: project.id };
 
-  const cart: CartWindow[] = windows.map(w => ({
+  const cart: CartWindow[] = normalizeStorefrontCart(windows.map(w => ({
     id: w.id,
     room: (w.rooms as { name: string } | null)?.name || 'Room',
     name: w.name || 'Window',
@@ -163,7 +245,7 @@ export async function loadCartFromSupabase(userId: string): Promise<{ cart: Cart
     installFee: Number(w.install_fee) || 0,
     designFee: Number(w.design_fee) || 0,
     surchargesTotal: Number(w.surcharges_total) || 0,
-  }));
+  })));
 
   return { cart, projectId: project.id };
 }

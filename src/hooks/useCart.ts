@@ -5,7 +5,7 @@ import {
   saveCartToSupabase, loadCartFromSupabase,
   loadLocalCheckout, saveLocalCheckout, type SavedCheckout,
 } from '@/lib/persistent-cart';
-import { DEFAULT_TAX_RATE } from '@/lib/constants';
+import { calculateStorefrontFreight } from '@/lib/pricing-rates';
 
 export type MountType = 'inside' | 'outside';
 
@@ -131,9 +131,10 @@ export function useCart() {
   const installTotal = cart.reduce((sum, w) => sum + w.installFee, 0);
   const designTotal = cart.reduce((sum, w) => sum + w.designFee, 0);
   const surchargesTotal = cart.reduce((sum, w) => sum + w.surchargesTotal, 0);
-  const taxRate = DEFAULT_TAX_RATE;
-  const tax = Math.round((subtotal + installTotal + designTotal + surchargesTotal) * taxRate * 100) / 100;
-  const grandTotal = Math.round((subtotal + installTotal + designTotal + surchargesTotal + tax) * 100) / 100;
+  const shippingTotal = calculateStorefrontFreight(cart);
+  // Exact destination tax is calculated by Stripe Tax in secure checkout.
+  const tax = 0;
+  const grandTotal = Math.round((subtotal + installTotal + designTotal + surchargesTotal + shippingTotal) * 100) / 100;
 
   const rooms: Record<string, CartWindow[]> = {};
   cart.forEach(w => {
@@ -145,7 +146,7 @@ export function useCart() {
     cart, rooms, loading, projectId,
     addWindow, removeWindow, updateWindow, changeTier, clearCart,
     syncToSupabase, saveCheckoutProgress, savedCheckout,
-    subtotal, installTotal, designTotal, surchargesTotal, tax, grandTotal,
+    subtotal, installTotal, designTotal, surchargesTotal, shippingTotal, tax, grandTotal,
     windowCount: cart.length,
   };
 }

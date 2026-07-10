@@ -75,7 +75,7 @@ export function getOrganizationSchema() {
     name: 'SnapShades & Shutters',
     url: SITE_URL,
     logo: `${SITE_URL}/logo.svg`,
-    description: 'Custom cellular shades, roller shades, and faux wood blinds at supplier cost plus 10%, with shipping included.',
+    description: 'Custom cellular shades, roller shades, and faux wood blinds at supplier cost plus 10%, plus pass-through freight and applicable tax.',
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: '+1-888-555-0123',
@@ -105,11 +105,6 @@ export function getProductSchema(product: {
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
       seller: { '@type': 'Organization', name: SITE_NAME },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingRate: { '@type': 'MonetaryAmount', value: '0', currency: 'USD' },
-        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'US' },
-      },
     },
   };
 }
@@ -119,7 +114,7 @@ export function getLocalBusinessSchema(city: string, state: string, installerCou
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: `SnapShades & Shutters — ${city}, ${state}`,
-    description: `Custom window coverings in ${city}, ${state}. Free shipping, ${installerCount} certified installers, dealer-direct pricing.`,
+    description: `Custom window coverings in ${city}, ${state}. Pass-through supplier freight, ${installerCount} certified installers, dealer-direct pricing.`,
     address: { '@type': 'PostalAddress', addressLocality: city, addressRegion: state, addressCountry: 'US' },
     url: SITE_URL,
     telephone: '+1-888-555-0123',

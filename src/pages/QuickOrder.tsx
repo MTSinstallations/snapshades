@@ -20,7 +20,7 @@ import {
   getValueProduct,
   type ValueProductId,
 } from '@/data/value-products';
-import { getCustomerPrice } from '@/data/catalog-index';
+import { calculateConfiguredStorefrontPrice } from '@/data/storefront-catalog';
 import { useCart, type CartWindow, type MountType } from '@/hooks/useCart';
 import { loadLocalCart, saveLocalCart } from '@/lib/persistent-cart';
 
@@ -132,6 +132,7 @@ export default function QuickOrder() {
   const [color, setColor] = useState(initialProduct?.colors[0].name ?? '');
   const [lightControl, setLightControl] = useState(initialProduct?.lightControls[0] ?? '');
   const [controlSide, setControlSide] = useState('Right');
+  const [slatSize, setSlatSize] = useState('2"');
   const [room, setRoom] = useState('');
   const [quantity, setQuantity] = useState(1);
 
@@ -149,10 +150,17 @@ export default function QuickOrder() {
     ?? variant?.priceGrid.heights[variant.priceGrid.heights.length - 1]
     ?? 96;
   const dimensionsWithinProductLimits = width >= 6 && height >= 6 && width <= maxWidth && height <= maxHeight;
-  const priceResult = variant && dimensionsWithinProductLimits
-    ? getCustomerPrice(variant.priceGrid, width, height)
+  const priceResult = variant && dimensionsWithinProductLimits && product
+    ? calculateConfiguredStorefrontPrice({
+        productSlug: product.catalogSlug,
+        variantId: variant.id,
+        width,
+        height,
+        lightControl,
+      })
     : null;
-  const selectedColor = product?.colors.find((item) => item.name === color) ?? product?.colors[0];
+  const availableColors = product?.colors.filter((item) => !item.lightControl || item.lightControl === lightControl) ?? [];
+  const selectedColor = availableColors.find((item) => item.name === color) ?? availableColors[0];
 
   const chooseProduct = (id: ValueProductId) => {
     const nextProduct = getValueProduct(id);
@@ -160,13 +168,22 @@ export default function QuickOrder() {
     setVariantId(null);
     setColor(nextProduct.colors[0].name);
     setLightControl(nextProduct.lightControls[0]);
+    setControlSide('Right');
+    setSlatSize('2"');
+  };
+
+  const chooseLightControl = (nextLightControl: string) => {
+    setLightControl(nextLightControl);
+    if (!product) return;
+    const nextColors = product.colors.filter((item) => !item.lightControl || item.lightControl === nextLightControl);
+    if (!nextColors.some((item) => item.name === color)) setColor(nextColors[0]?.name ?? '');
   };
 
   const canContinue =
     (step === 0 && product !== null)
     || step === 1
     || (step === 2 && priceResult !== null)
-    || (step === 3 && Boolean(color) && Boolean(lightControl));
+    || (step === 3 && Boolean(color) && Boolean(lightControl) && (product?.id !== 'faux-wood' || Boolean(slatSize)));
 
   const nextStep = () => {
     if (canContinue && step < STEPS.length - 1) setStep((current) => current + 1);
@@ -195,9 +212,10 @@ export default function QuickOrder() {
         mountType,
         productOptions: {
           color,
+          colorCode: selectedColor?.code ?? '',
           lightControl,
-          controlSide,
           construction: variant.name,
+          ...(product.id === 'faux-wood' ? { controlSide, slatSize } : {}),
         },
         product: product.name,
         productId: catalogProduct.slug,
@@ -375,7 +393,7 @@ export default function QuickOrder() {
                   <legend className="text-sm font-semibold">Light control</legend>
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     {product.lightControls.map((item) => (
-                      <ChoiceButton key={item} selected={lightControl === item} onClick={() => setLightControl(item)} title={item} />
+                      <ChoiceButton key={item} selected={lightControl === item} onClick={() => chooseLightControl(item)} title={item} />
                     ))}
                   </div>
                 </fieldset>
@@ -383,7 +401,7 @@ export default function QuickOrder() {
                 <fieldset>
                   <legend className="text-sm font-semibold">Color</legend>
                   <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {product.colors.map((item) => (
+                    {availableColors.map((item) => (
                       <button
                         key={item.name}
                         type="button"
@@ -399,9 +417,20 @@ export default function QuickOrder() {
                   </div>
                 </fieldset>
 
-                {product.id !== 'cellular' && (
+                {product.id === 'faux-wood' && (
                   <fieldset>
-                    <legend className="text-sm font-semibold">Control side</legend>
+                    <legend className="text-sm font-semibold">Slat size</legend>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      {['2"', '2½"'].map((size) => (
+                        <ChoiceButton key={size} selected={slatSize === size} onClick={() => setSlatSize(size)} title={`${size} slats`} />
+                      ))}
+                    </div>
+                  </fieldset>
+                )}
+
+                {product.id === 'faux-wood' && (
+                  <fieldset>
+                    <legend className="text-sm font-semibold">Tilt wand side</legend>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       {['Left', 'Right'].map((side) => (
                         <ChoiceButton key={side} selected={controlSide === side} onClick={() => setControlSide(side)} title={side} />
@@ -430,9 +459,9 @@ export default function QuickOrder() {
 
                   <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-4 border-y border-ink/10 py-5 text-sm">
                     <div><dt className="text-warm-gray-500">Size</dt><dd className="mt-1 font-semibold">{width}&quot; × {height}&quot;</dd></div>
-                    <div><dt className="text-warm-gray-500">Color</dt><dd className="mt-1 font-semibold">{color}</dd></div>
+                    <div><dt className="text-warm-gray-500">Color</dt><dd className="mt-1 font-semibold">{color} <span className="font-mono text-xs text-warm-gray-500">{selectedColor?.code}</span></dd></div>
                     <div><dt className="text-warm-gray-500">Light control</dt><dd className="mt-1 font-semibold">{lightControl}</dd></div>
-                    <div><dt className="text-warm-gray-500">Construction</dt><dd className="mt-1 font-semibold">{variant.name}</dd></div>
+                    <div><dt className="text-warm-gray-500">Operation</dt><dd className="mt-1 font-semibold">{product.id === 'faux-wood' ? `${slatSize} slats · ${controlSide} tilt` : 'Cordless'}</dd></div>
                   </dl>
 
                   <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
@@ -455,9 +484,9 @@ export default function QuickOrder() {
                     <div className="mt-4 space-y-2 text-sm">
                       <div className="flex justify-between"><span>Supplier cost</span><span>${priceResult.supplierCost.toFixed(2)}</span></div>
                       <div className="flex justify-between"><span>SnapShades 10%</span><span>${priceResult.brokerFee.toFixed(2)}</span></div>
-                      <div className="flex justify-between text-warm-gray-500"><span>Shipping</span><span>$0.00</span></div>
-                      <div className="flex justify-between text-warm-gray-500"><span>Tax</span><span>$0.00</span></div>
-                      <div className="flex justify-between border-t border-ink/10 pt-3 text-lg font-semibold"><span>{quantity > 1 ? `Total for ${quantity}` : 'Total'}</span><span>${(priceResult.price * quantity).toFixed(2)}</span></div>
+                      <div className="flex justify-between text-warm-gray-500"><span>Supplier freight</span><span>Calculated in cart</span></div>
+                      <div className="flex justify-between text-warm-gray-500"><span>Tax</span><span>Calculated at payment</span></div>
+                      <div className="flex justify-between border-t border-ink/10 pt-3 text-lg font-semibold"><span>{quantity > 1 ? `Products for ${quantity}` : 'Product price'}</span><span>${(priceResult.price * quantity).toFixed(2)}</span></div>
                     </div>
                   </div>
                 </div>

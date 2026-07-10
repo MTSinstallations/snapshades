@@ -5,7 +5,7 @@
  * Formula: customerPrice = retailPrice * 0.33
  */
 
-import { BROKER_MARKUP_RATE, DEALER_COST_RATE } from '@/lib/constants';
+import { BROKER_MARKUP_RATE, DEALER_COST_RATE } from '../lib/pricing-rates.ts';
 
 // ============================================================
 // TYPES

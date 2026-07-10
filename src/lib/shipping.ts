@@ -1,9 +1,9 @@
 /**
  * Shipping Calculator
  * 
- * SnapShades does not add a customer shipping charge. Manufacturer freight,
- * when applicable, is handled outside the customer-facing order total.
+ * Manufacturer freight is passed through to the customer without markup.
  */
+import { calculateStorefrontFreight } from '@/lib/pricing-rates';
 
 export interface ShippingQuote {
   subtotal: number;
@@ -17,9 +17,10 @@ export function calculateShipping(
 ): ShippingQuote {
   if (items.length === 0) return { subtotal: 0, perItemBreakdown: [], estimatedDays: '—' };
 
+  const subtotal = calculateStorefrontFreight(items);
   return {
-    subtotal: 0,
-    perItemBreakdown: [{ description: 'Shipping included', cost: 0 }],
+    subtotal,
+    perItemBreakdown: [{ description: 'Supplier freight (no markup)', cost: subtotal }],
     estimatedDays: 'Made to order',
   };
 }
@@ -29,7 +30,6 @@ export function calculateShipping(
  * Future: this will pull from Supabase for zone-based pricing
  */
 export function getEstimatedShippingForDisplay(windowCount: number, hasShutters: boolean): string {
-  void windowCount;
-  void hasShutters;
-  return '$0';
+  if (windowCount <= 0) return '$0';
+  return hasShutters ? 'Calculated at checkout' : `$${25 + Math.max(0, windowCount - 1) * 11}`;
 }

@@ -1,5 +1,5 @@
-import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { FormEvent, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Lock, ShoppingBag } from 'lucide-react';
 import SnapShadesLogo from '@/components/SnapShadesLogo';
 import ProductVisual from '@/components/value/ProductVisual';
@@ -8,7 +8,7 @@ import { VALUE_PRODUCTS } from '@/data/value-products';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/hooks/useCart';
 import { createOrder } from '@/lib/orders';
-import { createCheckoutSession } from '@/lib/payment-pipeline';
+import { createStorefrontCheckout } from '@/lib/payment-pipeline';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { checkoutInfoSchema } from '@/lib/validation';
 
@@ -32,8 +32,19 @@ const EMPTY_FORM: CheckoutForm = {
   email: '', firstName: '', lastName: '', phone: '', address1: '', address2: '', city: '', state: '', zip: '',
 };
 
+const CHECKOUT_TOKEN_KEY = 'snapshades_checkout_token';
+
+function getCheckoutToken(): string {
+  const existing = sessionStorage.getItem(CHECKOUT_TOKEN_KEY);
+  if (existing) return existing;
+  const token = crypto.randomUUID();
+  sessionStorage.setItem(CHECKOUT_TOKEN_KEY, token);
+  return token;
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const {
     cart,
@@ -41,10 +52,12 @@ export default function Checkout() {
     installTotal,
     designTotal,
     surchargesTotal,
+    shippingTotal,
     tax,
     grandTotal,
     windowCount,
-    syncToSupabase,
+    saveCheckoutProgress,
+    savedCheckout,
     clearCart,
     loading,
   } = useCart();
@@ -53,9 +66,35 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState('');
+  const restoredCheckout = useRef(false);
+
+  useEffect(() => {
+    if (!savedCheckout || restoredCheckout.current) return;
+    restoredCheckout.current = true;
+    setForm({
+      email: savedCheckout.email,
+      firstName: savedCheckout.firstName,
+      lastName: savedCheckout.lastName,
+      phone: savedCheckout.phone,
+      address1: savedCheckout.address1,
+      address2: savedCheckout.address2,
+      city: savedCheckout.city,
+      state: savedCheckout.state,
+      zip: savedCheckout.zip,
+    });
+  }, [savedCheckout]);
 
   const update = (field: keyof CheckoutForm, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+      saveCheckoutProgress({
+        ...next,
+        paymentMethod: 'card',
+        step: 'checkout',
+        savedAt: new Date().toISOString(),
+      });
+      return next;
+    });
     setErrors((current) => ({ ...current, [field]: '' }));
   };
 
@@ -79,35 +118,28 @@ export default function Checkout() {
     if (cart.length === 0) return;
 
     setPlacing(true);
-    const projectId = user ? await syncToSupabase() : null;
-    const result = await createOrder(
-      user?.id ?? 'guest',
-      projectId,
-      cart,
-      { ...form, paymentMethod: 'card' },
-      { subtotal, installTotal, designTotal, surchargesTotal, tax, grandTotal },
-    );
-
-    if (result.error) {
-      setSubmitError(result.error);
-      setPlacing(false);
-      return;
-    }
-
     if (isSupabaseConfigured) {
-      const origin = window.location.origin;
-      const session = await createCheckoutSession(
-        result.orderId,
-        result.orderNumber,
-        validation.data.email,
-        cart.map((item) => ({
-          name: `${item.product} — ${item.width}\" × ${item.height}\"`,
-          amount: item.customerPrice,
-          quantity: 1,
+      const checkoutInput = (checkoutToken: string) => ({
+        checkoutToken,
+        contact: form,
+        items: cart.map((item) => ({
+          id: item.id,
+          room: item.room,
+          name: item.name,
+          productId: item.productId,
+          variantId: item.variantId,
+          width: item.width,
+          height: item.height,
+          mountType: item.mountType ?? 'inside' as const,
+          productOptions: item.productOptions ?? {},
         })),
-        `${origin}/order-confirmation?id=${result.orderId}&order=${result.orderNumber}`,
-        `${origin}/checkout?cancelled=true`,
-      );
+      });
+
+      let session = await createStorefrontCheckout(checkoutInput(getCheckoutToken()));
+      if (session.code === 'CHECKOUT_CHANGED') {
+        sessionStorage.removeItem(CHECKOUT_TOKEN_KEY);
+        session = await createStorefrontCheckout(checkoutInput(getCheckoutToken()));
+      }
 
       if (session.error || !session.checkoutUrl) {
         setSubmitError(session.error || 'Secure checkout could not be opened. Please try again.');
@@ -119,7 +151,22 @@ export default function Checkout() {
       return;
     }
 
+    const result = await createOrder(
+      user?.id ?? 'guest',
+      null,
+      cart,
+      { ...form, paymentMethod: 'card' },
+      { subtotal, installTotal, designTotal, surchargesTotal, shippingTotal, tax, grandTotal },
+    );
+
+    if (result.error) {
+      setSubmitError(result.error);
+      setPlacing(false);
+      return;
+    }
+
     clearCart();
+    sessionStorage.removeItem(CHECKOUT_TOKEN_KEY);
     navigate(`/order-confirmation?id=${result.orderId}&order=${result.orderNumber}`);
   };
 
@@ -157,6 +204,11 @@ export default function Checkout() {
         <Link to="/cart" className="inline-flex items-center gap-2 text-sm font-semibold text-warm-gray-500 hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back to cart</Link>
         <div className="mt-6 grid items-start gap-8 lg:grid-cols-[1.15fr_.85fr]">
           <form onSubmit={submit} className="rounded-3xl bg-white p-6 sm:p-8" noValidate>
+            {searchParams.get('cancelled') === 'true' && (
+              <div role="status" className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                Payment was cancelled. Your measurements and shipping details are still here, and you have not been charged.
+              </div>
+            )}
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay">Checkout</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.035em]">Where should we send it?</h1>
@@ -192,7 +244,7 @@ export default function Checkout() {
             {submitError && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
 
             <button type="submit" disabled={placing} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-clay px-6 py-4 font-semibold text-white hover:bg-clay-hover disabled:opacity-50">
-              {placing ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> Preparing secure payment…</> : <><Lock className="h-4 w-4" /> Continue to payment · ${grandTotal.toFixed(2)}</>}
+              {placing ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> Preparing secure payment…</> : <><Lock className="h-4 w-4" /> Continue to payment · ${grandTotal.toFixed(2)} + tax</>}
             </button>
           </form>
 
@@ -215,13 +267,13 @@ export default function Checkout() {
             <div className="mt-6 space-y-3 border-t border-white/10 pt-5 text-sm">
               <div className="flex justify-between text-white/60"><span>Supplier cost</span><span>${supplierCostTotal.toFixed(2)}</span></div>
               <div className="flex justify-between text-white/60"><span>SnapShades 10%</span><span>${brokerFeeTotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-white/60"><span>Shipping</span><span>$0.00</span></div>
-              <div className="flex justify-between text-white/60"><span>Tax</span><span>$0.00</span></div>
-              <div className="flex justify-between border-t border-white/10 pt-4 text-xl font-semibold"><span>Total</span><span>${grandTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-white/60"><span>Supplier freight</span><span>${shippingTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-white/60"><span>Tax</span><span>Calculated by Stripe</span></div>
+              <div className="flex justify-between border-t border-white/10 pt-4 text-xl font-semibold"><span>Before tax</span><span>${grandTotal.toFixed(2)}</span></div>
             </div>
             <div className="mt-6 space-y-2 text-xs text-white/50">
               <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Supplier cost + 10%</p>
-              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Shipping included</p>
+              <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Freight passed through at supplier cost</p>
               <p className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#ef7a58]" /> Secure card payment</p>
             </div>
           </aside>

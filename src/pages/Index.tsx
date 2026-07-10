@@ -25,11 +25,11 @@ const faqs = [
   },
   {
     question: 'How is my price calculated?',
-    answer: 'We start with our supplier cost and add 10%. Shipping and tax are not added to the customer total.',
+    answer: 'We start with our supplier cost and add 10%. Supplier freight is passed through without markup, and Stripe calculates any applicable destination tax during secure payment.',
   },
   {
     question: 'Are these products cordless?',
-    answer: 'Cellular shades and faux wood blinds use cordless lift as standard. Roller shades use the control configuration shown during ordering.',
+    answer: 'All three products use cordless lift as standard. Faux wood blinds also let you choose the tilt-wand side.',
   },
 ];
 
@@ -38,7 +38,7 @@ export default function Index() {
     <div className="min-h-screen bg-sand text-ink">
       <SEOHead
         title="Custom Shades and Blinds at Cost Plus 10%"
-        description="Order cellular shades, roller shades, and faux wood blinds in your exact inside- or outside-mount size. Supplier cost plus 10%, with shipping included."
+        description="Order cellular shades, roller shades, and faux wood blinds in your exact inside- or outside-mount size. Supplier cost plus 10%, plus pass-through freight and applicable tax."
         canonical="/"
         schema={getFAQSchema(faqs)}
       />
@@ -73,7 +73,7 @@ export default function Index() {
                 </a>
               </div>
               <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-warm-gray-500">
-                {['Inside or outside mount', '$0 shipping', '$0 tax'].map((item) => (
+                {['Inside or outside mount', 'Freight at supplier cost', 'Tax calculated by Stripe'].map((item) => (
                   <span key={item} className="inline-flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-clay" /> {item}
                   </span>
@@ -87,7 +87,7 @@ export default function Index() {
               <div className="absolute -bottom-5 left-0 rounded-2xl border border-ink/10 bg-white p-4 shadow-xl sm:left-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-warm-gray-500">Your total</p>
                 <p className="mt-1 text-2xl font-semibold">Cost + 10%</p>
-                <p className="mt-1 text-xs text-warm-gray-500">Shipping $0 · Tax $0</p>
+                <p className="mt-1 text-xs text-warm-gray-500">Plus supplier freight and applicable tax</p>
               </div>
             </div>
           </div>

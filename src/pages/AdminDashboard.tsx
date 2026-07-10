@@ -1,6 +1,6 @@
 import SnapShadesLogo from "@/components/SnapShadesLogo";
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   BarChart3, DollarSign, Package, Users, Wrench, MapPin, ShieldCheck,
   TrendingUp, AlertTriangle, Clock, CheckCircle, XCircle, Eye,
@@ -440,7 +440,7 @@ export default function AdminDashboard() {
                     <tbody>
                       {stats.recentOrders.map(o => (
                         <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50">
-                          <td className="py-3 font-mono font-medium">{o.order_number}</td>
+                          <td className="py-3 font-mono font-medium"><Link to={`/admin/orders/${o.id}`} className="text-blue-700 hover:underline">{o.order_number}</Link></td>
                           <td className="py-3 text-gray-600">{o.customer_name}</td>
                           <td className="py-3"><span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[o.status] || ''}`}>{o.status}</span></td>
                           <td className="py-3 text-right font-medium">${o.grand_total.toFixed(2)}</td>

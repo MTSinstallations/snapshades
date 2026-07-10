@@ -5,7 +5,7 @@ Follow these steps in order. Each step is independently testable. Total time: ~4
 ## What you'll have when you're done
 
 - Live production URL (e.g. `https://snapshades.vercel.app` or your custom domain)
-- Supabase migrations applied (cart persistence, swatch orders, device sync, AI usage tracking)
+- Supabase migrations applied, including immutable order items, payment webhooks, and the fulfillment queue
 - Preview deploys on every git push — you see a unique URL for every branch before merging
 - Env vars set in Vercel so browser-safe Supabase / Stripe values never live in the repo
 - DNS managed in Cloudflare, with the app deployed on Vercel
@@ -22,7 +22,7 @@ Follow these steps in order. Each step is independently testable. Total time: ~4
 
 ## Step 1 — Apply Supabase migrations (one-time)
 
-The `supabase/migrations/` folder holds the schema this app needs. These haven't been applied to your live Supabase project yet.
+The `supabase/migrations/` folder holds the schema this app needs. Apply any versions not yet present in the live project.
 
 ### Option A — Supabase CLI (recommended, 2 minutes)
 
@@ -37,19 +37,17 @@ supabase db push
 
 ### Option B — SQL Editor (if the CLI balks)
 
-Open each `.sql` file in `supabase/migrations/` in numeric order and paste the SQL into **Supabase Dashboard → SQL Editor → Run**. Current migrations:
+Open each `.sql` file in `supabase/migrations/` in numeric order and paste the SQL into **Supabase Dashboard → SQL Editor → Run**. The storefront processing migrations are:
 
 ```
-20260416000001_ai_usage.sql        — AI rate limiting (tape measure)
-20260416000002_ai_credits.sql      — AI visualizer credit system
-20260416000003_swatch_requests.sql — Swatch-by-mail orders
-20260416000004_device_sync.sql     — Phone ↔ desktop project sync
+20260709000002_storefront_order_processing.sql — immutable order lines, webhook ledger, fulfillment queue
+20260709000003_lock_down_customer_order_writes.sql — server-authoritative order totals and payment state
+20260709000004_storefront_tax_and_freight.sql — Stripe customer address used for destination tax
 ```
 
 ### Verify
 
-In the Supabase dashboard → **Table Editor**, confirm these tables exist:
-`ai_usage`, `ai_credits`, `ai_credits_usage`, `swatch_requests`, `user_sync_state`.
+In the Supabase dashboard → **Table Editor**, confirm `orders`, `order_items`, `fulfillment_jobs`, and `stripe_webhook_events` exist.
 
 ---
 
@@ -112,7 +110,7 @@ If any of those fail, check **Vercel Dashboard → Deployments → Logs** for th
 
 ---
 
-## Step 5 — Deploy the Supabase Edge Functions (optional but recommended)
+## Step 5 — Deploy the Supabase Edge Functions (required for live orders)
 
 The AI features (tape measure reader + room visualizer) live in edge functions. Deploy them so they're callable from the live site.
 
@@ -120,12 +118,12 @@ The AI features (tape measure reader + room visualizer) live in edge functions. 
 # Deploy all functions
 supabase functions deploy read-tape-measure
 supabase functions deploy visualize-room
-supabase functions deploy send-email                 # still TODO wiring, stub for now
-supabase functions deploy create-payment-intent
+supabase functions deploy create-checkout-session
+supabase functions deploy get-checkout-status
 supabase functions deploy stripe-webhook
 ```
 
-The AI functions degrade gracefully without API keys — the buttons exist but show "AI not configured" messages. When you're ready to light them up:
+The storefront stays in local demo mode without the browser Supabase values. A configured production frontend requires the checkout functions and secrets below before it can accept a payment.
 
 ```bash
 # Tape measure (Anthropic Claude vision)
@@ -137,9 +135,22 @@ supabase secrets set GOOGLE_AI_API_KEY=AIza...
 # Stripe (required for checkout)
 supabase secrets set STRIPE_SECRET_KEY=sk_live_...
 supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
+supabase secrets set RESEND_API_KEY=re_...
+supabase secrets set ORDER_NOTIFICATION_EMAIL=hello@snapshadesandshutters.com
+supabase secrets set ALLOWED_ORIGINS=https://snapshadesandshutters.com,https://www.snapshadesandshutters.com
+supabase secrets set RATE_LIMIT_SALT=<long-random-secret>
 ```
 
 See `docs/agent-instructions-stripe-setup.md` for the Stripe side. AI features are pure upgrades — the DIY flow works without them.
+
+### Required Stripe Dashboard setup
+
+1. Activate Stripe Tax, set the business origin address, and add every tax registration advised by the business's tax professional.
+2. Set the default product tax code to **General — Tangible Goods** and configure the physical-goods shipping tax code.
+3. Create a webhook endpoint for `https://ghqfpqthwgwogktlkfjp.supabase.co/functions/v1/stripe-webhook` and subscribe to checkout session completion/expiry, PaymentIntent success/failure, and charge refund events.
+4. Store that endpoint's signing secret as `STRIPE_WEBHOOK_SECRET`.
+
+The application passes Norman freight through without markup ($25 first standard unit, $11 each additional; $80 first 90-inch-or-wider unit and $50 each additional oversized unit). Stripe adds applicable destination tax during hosted payment, and the paid order stores the exact tax and final total returned by Stripe.
 
 ---
 

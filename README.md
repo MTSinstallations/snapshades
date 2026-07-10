@@ -18,6 +18,7 @@ npm run test:e2e
 - DNS/domain management: Cloudflare
 - Backend: Supabase PostgreSQL, Auth, Storage, and Edge Functions
 - Payments: Stripe Checkout, Payment Intents, and Connect
+- Storefront pricing: Norman supplier cost + 10%, pass-through supplier freight, Stripe destination tax
 
 Set browser-safe values in Vercel:
 
@@ -35,6 +36,12 @@ ANTHROPIC_API_KEY
 GOOGLE_AI_API_KEY
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
+RESEND_API_KEY
+ORDER_NOTIFICATION_EMAIL
+ALLOWED_ORIGINS
+RATE_LIMIT_SALT
 ```
 
 See [docs/deployment.md](docs/deployment.md) for the production runbook.
+
+Live checkout also requires Stripe Tax registrations/default tangible-goods and shipping tax codes plus a signed webhook endpoint. The browser never decides product price, freight, tax, or paid status.

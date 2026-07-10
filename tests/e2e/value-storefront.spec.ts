@@ -17,21 +17,22 @@ test('customer configures and orders a cellular shade through the simplified flo
   await expect(page.getByText(/Do not deduct/i)).toBeVisible();
   await page.getByLabel('Width whole inches').fill('36');
   await page.getByLabel('Height whole inches').fill('48');
-  await expect(page.getByText('Your price: $59.40')).toBeVisible();
+  await expect(page.getByText('Your price: $96.03')).toBeVisible();
   await page.getByRole('button', { name: /Continue to Details/i }).click();
 
-  await page.getByRole('button', { name: 'Blackout' }).click();
+  await page.getByRole('button', { name: 'Room darkening' }).click();
   await page.getByRole('button', { name: /Continue to Review/i }).click();
   await expect(page.getByText('Supplier cost')).toBeVisible();
   await expect(page.getByText('SnapShades 10%')).toBeVisible();
-  await expect(page.getByText('$54.00')).toBeVisible();
-  await expect(page.getByText('$5.40')).toBeVisible();
+  await expect(page.getByText('$104.76')).toBeVisible();
+  await expect(page.getByText('$10.48')).toBeVisible();
 
   await page.getByRole('button', { name: /Add to cart/i }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(page.getByRole('heading', { name: 'Your cart' })).toBeVisible();
-  await expect(page.getByText('Shipping').last()).toBeVisible();
-  await expect(page.getByText('$0.00').first()).toBeVisible();
+  await expect(page.getByText('Supplier freight').last()).toBeVisible();
+  await expect(page.getByText('$25.00').last()).toBeVisible();
+  await expect(page.getByText('Calculated at payment')).toBeVisible();
 
   await page.getByRole('button', { name: /Continue to checkout/i }).click();
   await page.getByLabel('Email').fill('customer@example.com');
@@ -54,4 +55,19 @@ test('legacy product routes enter the simplified three-product order flow', asyn
   await page.goto('/products/plantation-shutters');
   await expect(page).toHaveURL(/\/order$/);
   await expect(page.getByRole('heading', { name: 'Choose your product.' })).toBeVisible();
+});
+
+test('faux wood flow captures supplier-ready slat and tilt details', async ({ page }) => {
+  await page.goto('/order?product=faux-wood');
+  await expect(page.getByRole('heading', { name: 'How will it mount?' })).toBeVisible();
+  await page.getByRole('button', { name: /Continue to Size/i }).click();
+  await page.getByLabel('Width whole inches').fill('96');
+  await page.getByLabel('Height whole inches').fill('96');
+  await expect(page.getByRole('alert')).toContainText('Enter a width and height');
+  await page.getByLabel('Height whole inches').fill('48');
+  await page.getByRole('button', { name: /Continue to Details/i }).click();
+  await page.getByRole('button', { name: /2½" slats/i }).click();
+  await page.getByRole('button', { name: 'Left' }).click();
+  await page.getByRole('button', { name: /Continue to Review/i }).click();
+  await expect(page.getByText('2½" slats · Left tilt')).toBeVisible();
 });

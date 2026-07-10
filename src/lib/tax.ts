@@ -1,6 +1,6 @@
 /**
- * SnapShades operates this storefront as a broker and does not add sales tax
- * to the customer-facing order total.
+ * The live storefront delegates exact destination tax to Stripe Tax. These
+ * legacy helpers return zero because the browser must not guess a tax amount.
  */
 
 // State-level defaults (simplified — matches zip-activation.ts)

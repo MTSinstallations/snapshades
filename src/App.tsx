@@ -6,7 +6,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthProvider } from '@/contexts/AuthContext';
-import AdminGuard from '@/components/AdminGuard';
+import StaffGuard from '@/components/StaffGuard';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Index from '@/pages/Index';
 
@@ -23,6 +23,7 @@ const ContractorOnboarding = lazy(() => import('@/pages/ContractorOnboarding'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
 const AdminContractors = lazy(() => import('@/pages/AdminContractors'));
 const AdminZipActivation = lazy(() => import('@/pages/AdminZipActivation'));
+const AdminOrderDetail = lazy(() => import('@/pages/AdminOrderDetail'));
 const CustomerService = lazy(() => import('@/pages/CustomerService'));
 
 const PageLoader = () => (
@@ -86,10 +87,11 @@ const App = () => (
                   <Route path="/portal/contractor" element={<ContractorPortal />} />
                   <Route path="/portal/designer" element={<ContractorPortal />} />
                   <Route path="/onboard" element={<ContractorOnboarding />} />
-                  <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
-                  <Route path="/admin/dashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
-                  <Route path="/admin/contractors" element={<AdminGuard><AdminContractors /></AdminGuard>} />
-                  <Route path="/admin/zip-activation" element={<AdminGuard><AdminZipActivation /></AdminGuard>} />
+                  <Route path="/admin" element={<StaffGuard><AdminDashboard /></StaffGuard>} />
+                  <Route path="/admin/dashboard" element={<StaffGuard><AdminDashboard /></StaffGuard>} />
+                  <Route path="/admin/orders/:orderId" element={<StaffGuard><AdminOrderDetail /></StaffGuard>} />
+                  <Route path="/admin/contractors" element={<StaffGuard><AdminContractors /></StaffGuard>} />
+                  <Route path="/admin/zip-activation" element={<StaffGuard><AdminZipActivation /></StaffGuard>} />
                   <Route path="/help" element={<CustomerService />} />
                   <Route path="/warranty" element={<CustomerService />} />
                   <Route path="/claims" element={<CustomerService />} />

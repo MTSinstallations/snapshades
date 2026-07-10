@@ -92,8 +92,9 @@ export async function advanceOrder(orderId: string, targetStatus: OrderStatus, m
       actions.push('Sent confirmation email');
     }
 
-    // TODO: Submit to Norman dealer portal (AI agent)
-    actions.push('Queued for Norman portal submission');
+    // Supplier work is queued only by the paid-order database trigger. A
+    // status transition by itself must never release an unpaid order.
+    actions.push('Fulfillment remains gated by verified payment');
   }
 
   if (targetStatus === 'shipped') {
